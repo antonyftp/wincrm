@@ -1,0 +1,194 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  admin
+  commercial
+}
+
+enum UserStatut {
+  en_attente
+  actif
+  inactif
+  refuse
+}
+
+enum LeadEtat {
+  nouveau
+  reponse_envoyee
+  contacte_telephone
+  non_valide
+  qualifie
+  visite_effectuee
+  offre_en_cours
+  offre_acceptee
+}
+
+enum LeadEtape {
+  nouveau_contact
+  en_attente_qualification
+  qualifie
+  biens_proposes
+  visite_programmee
+  visite_effectuee
+  relance_apres_visite
+  offre_negociation
+  conclu
+  perdu
+}
+
+enum Genre {
+  M
+  Mme
+  Autre
+}
+
+enum SituationMaritale {
+  marie
+  veuf
+  celibataire
+  divorce
+}
+
+enum NatureRecherche {
+  achat
+  location
+  investissement
+}
+
+enum TypeLogement {
+  appartement
+  maison
+  studio
+  t2
+  t3
+  t4
+  autre
+}
+
+enum ActionType {
+  appel
+  email
+  rdv
+  visite
+  relance
+}
+
+model User {
+  id        String     @id @default(cuid())
+  nom       String
+  prenom    String
+  email     String     @unique
+  password  String
+  role      Role       @default(commercial)
+  statut    UserStatut @default(en_attente)
+  leads     Lead[]
+  comments  Comment[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  accounts Account[]
+  sessions Session[]
+}
+
+model Lead {
+  id          String   @id @default(cuid())
+  dateSaisie  DateTime @default(now())
+  etat        LeadEtat @default(nouveau)
+  etape       LeadEtape @default(nouveau_contact)
+  titulaire   User?    @relation(fields: [titulaireId], references: [id], onDelete: SetNull)
+  titulaireId String?
+
+  genre            Genre
+  prenom           String
+  nom              String
+  age              Int?
+  email            String?
+  telephone        String?
+  adresse          String?
+  situationMaritale SituationMaritale?
+  heritier         Boolean?
+
+  natureRecherche    NatureRecherche
+  typeLogement       TypeLogement
+  budgetMin          Float?
+  budgetMax          Float?
+  criteresSpecifiques String?
+
+  comments Comment[]
+  actions  Action[]
+  visits   Visit[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  lead      Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  leadId    String
+  author    User?    @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  authorId  String?
+  createdAt DateTime @default(now())
+}
+
+model Action {
+  id        String     @id @default(cuid())
+  type      ActionType
+  date      DateTime
+  done      Boolean    @default(false)
+  lead      Lead       @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  leadId    String
+  createdAt DateTime   @default(now())
+}
+
+model Visit {
+  id          String   @id @default(cuid())
+  bien        String
+  dateVisite  DateTime
+  lead        Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  leadId      String
+  createdAt   DateTime @default(now())
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
