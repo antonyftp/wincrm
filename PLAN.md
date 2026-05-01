@@ -178,7 +178,7 @@
 ---
 
 ### Phase 9 — Finitions & Déploiement
-**Statut** : `[ ] À faire`
+**Statut** : `[x] Terminé`
 
 **Objectif** : Application prête pour la production.
 
@@ -205,4 +205,4 @@
 | 6 | Dashboard KPIs | Analytics Reporter + UI Designer | `[x]` |
 | 7 | Exports Excel/PDF | Backend Architect | `[x]` |
 | 8 | Espace Admin | Senior Developer | `[x]` |
-| 9 | Finitions & Déploiement | DevOps Automator | `[ ]` |
+| 9 | Finitions & Déploiement | DevOps Automator | `[x]` |
