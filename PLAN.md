@@ -193,6 +193,55 @@
 
 ---
 
+---
+
+### Phase 10 — Migration Supabase Auth
+**Statut** : `[ ] À faire`
+
+**Objectif** : Remplacer le système d'auth custom (JWT jose + bcryptjs) par Supabase Auth, en conservant le workflow d'approbation admin (statut Prisma) et les rôles.
+
+**Agents** : `Backend Architect` → `Security Engineer` → `Code Reviewer` (exécution complète en une seule passe)
+
+**Travaux (exécutés dans cet ordre) :**
+
+*`Backend Architect`*
+1. Installer `@supabase/supabase-js` et `@supabase/ssr`
+2. Modifier `prisma/schema.prisma` : supprimer `password`, ajouter `supabaseId String? @unique`, supprimer les modèles `Account`, `Session`, `VerificationToken`
+3. Lancer `npx prisma generate` (le `db push` sera fait manuellement si la connexion échoue)
+4. Mettre à jour `.env.local` : ajouter `NEXT_PUBLIC_SUPABASE_URL=`, `NEXT_PUBLIC_SUPABASE_ANON_KEY=`, `SUPABASE_SERVICE_ROLE_KEY=` ; supprimer `NEXTAUTH_SECRET`
+5. `npm run build` — corriger toutes les erreurs TypeScript
+
+*`Security Engineer`*
+6. Créer `lib/supabase/server.ts` — client server-side (`createServerClient` + cookies `next/headers`)
+7. Créer `lib/supabase/client.ts` — client browser-side (`createBrowserClient`)
+8. Créer `lib/supabase/middleware.ts` — helper de rafraîchissement de session
+9. Créer `middleware.ts` à la racine — rafraîchit le token à chaque requête, matcher hors `/_next` et assets statiques
+10. Réécrire `app/lib/session.ts` — conserver uniquement `getSession()` avec la même signature `SessionPayload` ; `userId` = CUID Prisma (pas l'UUID Supabase) via query `findUnique({ where: { supabaseId } })`
+11. Réécrire `app/actions/auth.ts` — `register` via `signUp` + `prisma.user.create`, `login` via `signInWithPassword` + check statut Prisma (si ≠ actif → `signOut` + erreur métier), `logout` via `signOut`
+12. Désinstaller `jose`, `bcryptjs`, `@types/bcryptjs`, `next-auth`, `@auth/prisma-adapter`
+13. `npm run build` — corriger toutes les erreurs TypeScript
+
+*`Code Reviewer`*
+14. Revue des fichiers créés et modifiés
+15. Marquer la Phase 10 `[x] Terminé` dans ce fichier
+
+**Contrainte critique** : les 15 fichiers qui appellent `getSession()` ne doivent pas être touchés.
+
+**Configuration manuelle post-agent (Supabase Dashboard) :**
+- Auth → URL Configuration → ajouter `http://localhost:3000` en Redirect URL
+- Auth → Email → désactiver "Confirm email"
+- Remplir les valeurs réelles dans `.env.local` et `.env.production.local`
+- Lancer `npx prisma db push` une fois la connexion DB opérationnelle
+
+**Tests à valider :**
+- Inscription → `en_attente` → admin active → login → dashboard ✓
+- Login bloqué pour `en_attente` / `refuse` / `inactif` avec bon message ✓
+- Logout ✓
+- Accès admin avec rôle `commercial` → redirect ✓
+- Export leads authentifié / non authentifié ✓
+
+---
+
 ## Récapitulatif
 
 | Phase | Contenu | Agent principal | Statut |
@@ -206,3 +255,4 @@
 | 7 | Exports Excel/PDF | Backend Architect | `[x]` |
 | 8 | Espace Admin | Senior Developer | `[x]` |
 | 9 | Finitions & Déploiement | DevOps Automator | `[x]` |
+| 10 | Migration Supabase Auth | `Security Engineer` + `Backend Architect` | `[ ]` |
