@@ -1,6 +1,7 @@
 import { logout } from "@/app/actions/auth";
 import { getSession } from "@/app/lib/session";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 
 export default async function AppLayout({
   children,
@@ -14,9 +15,19 @@ export default async function AppLayout({
     <div className="min-h-screen flex flex-col bg-slate-50">
       <header className="bg-white border-b border-slate-200">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex h-14 items-center justify-between">
-          <span className="text-base font-bold tracking-tight text-slate-900">
-            WIN CRM
-          </span>
+          <div className="flex items-center gap-6">
+            <span className="text-base font-bold tracking-tight text-slate-900">
+              WIN CRM
+            </span>
+            <nav className="flex items-center gap-4 text-sm font-medium text-slate-600">
+              <Link href="/dashboard" className="hover:text-slate-900 transition-colors">
+                Tableau de bord
+              </Link>
+              <Link href="/leads" className="hover:text-slate-900 transition-colors">
+                Leads
+              </Link>
+            </nav>
+          </div>
           <form action={logout}>
             <button
               type="submit"

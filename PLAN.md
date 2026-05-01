@@ -72,7 +72,7 @@
 ---
 
 ### Phase 3 — CRUD Leads
-**Statut** : `[ ] À faire`
+**Statut** : `[x] Terminé`
 
 **Objectif** : Créer, lire, modifier, supprimer un lead.
 
@@ -199,7 +199,7 @@
 |---|---|---|---|
 | 1 | Infrastructure & DB | Backend Architect | `[x]` |
 | 2 | Auth & Utilisateurs | Security Engineer | `[x]` |
-| 3 | CRUD Leads | Frontend Developer + Senior Developer | `[ ]` |
+| 3 | CRUD Leads | Frontend Developer + Senior Developer | `[x]` |
 | 4 | Recherche & Pipeline | Frontend Developer | `[ ]` |
 | 5 | Suivi & Historique | Backend Architect + Frontend Developer | `[ ]` |
 | 6 | Dashboard KPIs | Analytics Reporter + UI Designer | `[ ]` |
