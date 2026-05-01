@@ -117,7 +117,7 @@
 ---
 
 ### Phase 5 — Suivi commercial & Historique
-**Statut** : `[ ] À faire`
+**Statut** : `[x] Terminé`
 
 **Objectif** : Traçabilité complète des actions sur chaque lead.
 
@@ -201,7 +201,7 @@
 | 2 | Auth & Utilisateurs | Security Engineer | `[x]` |
 | 3 | CRUD Leads | Frontend Developer + Senior Developer | `[x]` |
 | 4 | Recherche & Pipeline | Frontend Developer | `[x]` |
-| 5 | Suivi & Historique | Backend Architect + Frontend Developer | `[ ]` |
+| 5 | Suivi & Historique | Backend Architect + Frontend Developer | `[x]` |
 | 6 | Dashboard KPIs | Analytics Reporter + UI Designer | `[ ]` |
 | 7 | Exports Excel/PDF | Backend Architect | `[ ]` |
 | 8 | Espace Admin | Senior Developer | `[ ]` |
