@@ -96,7 +96,19 @@ export async function getLead(id: string) {
 
   const lead = await prisma.lead.findUnique({
     where: { id },
-    include: { titulaire: titulaireSelect },
+    include: {
+      titulaire: titulaireSelect,
+      comments: {
+        include: { author: { select: { id: true, nom: true, prenom: true } } },
+        orderBy: { createdAt: "desc" },
+      },
+      actions: {
+        orderBy: { date: "asc" },
+      },
+      visits: {
+        orderBy: { dateVisite: "desc" },
+      },
+    },
   });
 
   if (!lead) return null;

@@ -4,6 +4,9 @@ import { getLead } from "@/app/actions/leads";
 import { getSession } from "@/app/lib/session";
 import { ETAT_LABELS, ETAPE_LABELS, etatBadgeClass, etapeBadgeClass } from "../lib/labels";
 import DeleteButton from "../components/DeleteButton";
+import CommentSection from "../components/CommentSection";
+import VisitSection from "../components/VisitSection";
+import ActionSection from "../components/ActionSection";
 import type { ReactNode } from "react";
 
 function InfoRow({ label, value }: { label: string; value: ReactNode }) {
@@ -33,6 +36,10 @@ export default async function LeadDetailPage({
   const canEdit =
     isAdmin ||
     lead.titulaireId === null ||
+    lead.titulaireId === session?.userId;
+
+  const canDeleteVisit =
+    isAdmin ||
     lead.titulaireId === session?.userId;
 
   return (
@@ -182,6 +189,24 @@ export default async function LeadDetailPage({
               )}
             </dl>
           </div>
+
+          <ActionSection
+            leadId={lead.id}
+            actions={lead.actions}
+          />
+
+          <VisitSection
+            leadId={lead.id}
+            visits={lead.visits}
+            canDelete={canDeleteVisit}
+          />
+
+          <CommentSection
+            leadId={lead.id}
+            comments={lead.comments}
+            sessionUserId={session?.userId ?? ""}
+            sessionRole={session?.role ?? ""}
+          />
         </section>
 
         <aside className="space-y-6">

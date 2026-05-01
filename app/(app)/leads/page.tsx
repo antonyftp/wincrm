@@ -1,10 +1,12 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { getLeads, getCommercials } from "@/app/actions/leads";
 import { getSession } from "@/app/lib/session";
 import { ETAT_LABELS, ETAPE_LABELS, etatBadgeClass } from "./lib/labels";
 import DeleteButton from "./components/DeleteButton";
 import LeadsFilters from "./components/LeadsFilters";
 import PipelineView from "./components/PipelineView";
+import LeadsARelancer from "./components/LeadsARelancer";
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
@@ -74,6 +76,10 @@ export default async function LeadsPage({ searchParams }: { searchParams: Search
           <span aria-hidden>+</span> Nouveau lead
         </Link>
       </div>
+
+      <Suspense fallback={null}>
+        <LeadsARelancer />
+      </Suspense>
 
       <LeadsFilters commercials={commercials} />
 
