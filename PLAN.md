@@ -133,7 +133,7 @@
 ---
 
 ### Phase 6 — Tableau de bord (Dashboard)
-**Statut** : `[ ] À faire`
+**Statut** : `[x] Terminé`
 
 **Objectif** : Vue synthétique des KPIs commerciaux.
 
@@ -202,7 +202,7 @@
 | 3 | CRUD Leads | Frontend Developer + Senior Developer | `[x]` |
 | 4 | Recherche & Pipeline | Frontend Developer | `[x]` |
 | 5 | Suivi & Historique | Backend Architect + Frontend Developer | `[x]` |
-| 6 | Dashboard KPIs | Analytics Reporter + UI Designer | `[ ]` |
+| 6 | Dashboard KPIs | Analytics Reporter + UI Designer | `[x]` |
 | 7 | Exports Excel/PDF | Backend Architect | `[ ]` |
 | 8 | Espace Admin | Senior Developer | `[ ]` |
 | 9 | Finitions & Déploiement | DevOps Automator | `[ ]` |
