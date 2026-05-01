@@ -10,9 +10,21 @@ import {
   NatureRecherche,
   SituationMaritale,
   TypeLogement,
+  type Prisma,
 } from "@prisma/client";
 
 export type FormState = { error: string } | null;
+
+export type LeadsFilters = {
+  q?: string;
+  commercial?: string;
+  etat?: string;
+  etape?: string;
+  typeLogement?: string;
+  natureRecherche?: string;
+  sortBy?: string;
+  sortDir?: "asc" | "desc";
+};
 
 const GENRES = new Set<string>(["M", "Mme", "Autre"]);
 const LEAD_ETATS = new Set<string>([
@@ -30,19 +42,51 @@ const SITUATIONS_MARITALES = new Set<string>(["marie", "veuf", "celibataire", "d
 
 const titulaireSelect = { select: { id: true, nom: true, prenom: true } } as const;
 
-export async function getLeads() {
+export async function getLeads(filters: LeadsFilters = {}) {
   const session = await getSession();
   if (!session) return { error: "Non authentifié." };
 
-  const where =
-    session.role === "admin"
-      ? {}
-      : { OR: [{ titulaireId: session.userId }, { titulaireId: null }] };
+  const { q, commercial, etat, etape, typeLogement, natureRecherche, sortBy, sortDir = "desc" } = filters;
+
+  const conditions: Prisma.LeadWhereInput[] = [];
+
+  if (session.role !== "admin") {
+    conditions.push({ OR: [{ titulaireId: session.userId }, { titulaireId: null }] });
+  }
+
+  if (q) {
+    const safeQ = q.trim().slice(0, 200);
+    conditions.push({
+      OR: [
+        { nom: { contains: safeQ, mode: "insensitive" } },
+        { prenom: { contains: safeQ, mode: "insensitive" } },
+        { telephone: { contains: safeQ } },
+        { email: { contains: safeQ, mode: "insensitive" } },
+      ],
+    });
+  }
+
+  if (commercial) conditions.push({ titulaireId: commercial });
+  if (etat && LEAD_ETATS.has(etat)) conditions.push({ etat: etat as LeadEtat });
+  if (etape && LEAD_ETAPES.has(etape)) conditions.push({ etape: etape as LeadEtape });
+  if (typeLogement && TYPES_LOGEMENT.has(typeLogement)) conditions.push({ typeLogement: typeLogement as TypeLogement });
+  if (natureRecherche && NATURES_RECHERCHE.has(natureRecherche)) conditions.push({ natureRecherche: natureRecherche as NatureRecherche });
+
+  const dir = sortDir === "asc" ? "asc" : "desc";
+  const SORT_FIELDS: Record<string, object> = {
+    dateSaisie: { dateSaisie: dir },
+    nom: { nom: dir },
+    etat: { etat: dir },
+    etape: { etape: dir },
+    typeLogement: { typeLogement: dir },
+    natureRecherche: { natureRecherche: dir },
+  };
+  const orderBy = sortBy && SORT_FIELDS[sortBy] ? SORT_FIELDS[sortBy] : { dateSaisie: dir };
 
   return prisma.lead.findMany({
-    where,
+    where: conditions.length > 0 ? { AND: conditions } : {},
     include: { titulaire: titulaireSelect },
-    orderBy: { dateSaisie: "desc" },
+    orderBy,
   });
 }
 

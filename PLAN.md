@@ -90,7 +90,7 @@
 ---
 
 ### Phase 4 — Recherche, Filtres & Pipeline
-**Statut** : `[ ] À faire`
+**Statut** : `[x] Terminé`
 
 **Objectif** : Navigation efficace dans les leads.
 
@@ -200,7 +200,7 @@
 | 1 | Infrastructure & DB | Backend Architect | `[x]` |
 | 2 | Auth & Utilisateurs | Security Engineer | `[x]` |
 | 3 | CRUD Leads | Frontend Developer + Senior Developer | `[x]` |
-| 4 | Recherche & Pipeline | Frontend Developer | `[ ]` |
+| 4 | Recherche & Pipeline | Frontend Developer | `[x]` |
 | 5 | Suivi & Historique | Backend Architect + Frontend Developer | `[ ]` |
 | 6 | Dashboard KPIs | Analytics Reporter + UI Designer | `[ ]` |
 | 7 | Exports Excel/PDF | Backend Architect | `[ ]` |

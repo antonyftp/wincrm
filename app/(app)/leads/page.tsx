@@ -1,19 +1,72 @@
 import Link from "next/link";
-import { getLeads } from "@/app/actions/leads";
+import { getLeads, getCommercials } from "@/app/actions/leads";
 import { getSession } from "@/app/lib/session";
 import { ETAT_LABELS, ETAPE_LABELS, etatBadgeClass } from "./lib/labels";
 import DeleteButton from "./components/DeleteButton";
+import LeadsFilters from "./components/LeadsFilters";
+import PipelineView from "./components/PipelineView";
 
-export default async function LeadsPage() {
-  const [leadsResult, session] = await Promise.all([getLeads(), getSession()]);
+type SearchParams = Promise<Record<string, string | string[] | undefined>>;
+
+function str(value: string | string[] | undefined): string {
+  if (!value) return "";
+  return Array.isArray(value) ? value[0] ?? "" : value;
+}
+
+function buildViewParam(spStrings: Record<string, string>, targetView: string): string {
+  const params = new URLSearchParams({ ...spStrings, view: targetView });
+  return `/leads?${params.toString()}`;
+}
+
+export default async function LeadsPage({ searchParams }: { searchParams: SearchParams }) {
+  const sp = await searchParams;
+
+  const q = str(sp.q);
+  const commercial = str(sp.commercial);
+  const etat = str(sp.etat);
+  const etape = str(sp.etape);
+  const typeLogement = str(sp.typeLogement);
+  const natureRecherche = str(sp.natureRecherche);
+  const sortBy = str(sp.sortBy);
+  const sortDir = (str(sp.sortDir) || "desc") as "asc" | "desc";
+  const view = str(sp.view) || "list";
+
+  const filters = {
+    ...(q && { q }),
+    ...(commercial && { commercial }),
+    ...(etat && { etat }),
+    ...(etape && { etape }),
+    ...(typeLogement && { typeLogement }),
+    ...(natureRecherche && { natureRecherche }),
+    ...(sortBy && { sortBy }),
+    sortDir,
+  };
+
+  const spStrings: Record<string, string> = {};
+  for (const [k, v] of Object.entries(sp)) {
+    if (v && !Array.isArray(v)) spStrings[k] = v;
+  }
+
+  const [leadsResult, commercialsResult, session] = await Promise.all([
+    getLeads(filters),
+    getCommercials(),
+    getSession(),
+  ]);
 
   const leads = Array.isArray(leadsResult) ? leadsResult : [];
+  const commercials = Array.isArray(commercialsResult) ? commercialsResult : [];
   const isAdmin = session?.role === "admin";
+
+  const listHref = buildViewParam(spStrings, "list");
+  const pipelineHref = buildViewParam(spStrings, "pipeline");
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-slate-900">Leads</h1>
+        <h1 className="text-2xl font-bold text-slate-900">
+          Leads{" "}
+          <span className="text-lg font-normal text-slate-500">({leads.length})</span>
+        </h1>
         <Link
           href="/leads/nouveau"
           className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
@@ -22,7 +75,34 @@ export default async function LeadsPage() {
         </Link>
       </div>
 
-      {leads.length === 0 ? (
+      <LeadsFilters commercials={commercials} />
+
+      <div className="flex gap-1 mb-4">
+        <Link
+          href={listHref}
+          className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+            view !== "pipeline"
+              ? "bg-blue-600 text-white shadow-sm"
+              : "text-slate-600 hover:bg-slate-100"
+          }`}
+        >
+          Liste
+        </Link>
+        <Link
+          href={pipelineHref}
+          className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+            view === "pipeline"
+              ? "bg-blue-600 text-white shadow-sm"
+              : "text-slate-600 hover:bg-slate-100"
+          }`}
+        >
+          Pipeline
+        </Link>
+      </div>
+
+      {view === "pipeline" ? (
+        <PipelineView leads={leads} />
+      ) : leads.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mb-4">
             <svg

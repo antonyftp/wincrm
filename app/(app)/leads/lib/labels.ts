@@ -1,4 +1,4 @@
-import { LeadEtat, LeadEtape } from "@prisma/client";
+import { LeadEtat, LeadEtape, NatureRecherche, TypeLogement } from "@prisma/client";
 
 export const ETAT_LABELS: Record<LeadEtat, string> = {
   nouveau: "Nouveau",
@@ -20,8 +20,24 @@ export const ETAPE_LABELS: Record<LeadEtape, string> = {
   visite_effectuee: "Visite effectuée",
   relance_apres_visite: "Relance après visite",
   offre_negociation: "Offre / Négociation",
-  conclu: "Conclu ✅",
-  perdu: "Perdu ❌",
+  conclu: "Conclu",
+  perdu: "Perdu",
+};
+
+export const NATURE_LABELS: Record<NatureRecherche, string> = {
+  achat: "Achat",
+  location: "Location",
+  investissement: "Investissement",
+};
+
+export const TYPE_LABELS: Record<TypeLogement, string> = {
+  appartement: "Appartement",
+  maison: "Maison",
+  studio: "Studio",
+  t2: "T2",
+  t3: "T3",
+  t4: "T4",
+  autre: "Autre",
 };
 
 export function etatBadgeClass(etat: LeadEtat): string {
