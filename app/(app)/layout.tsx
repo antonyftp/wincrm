@@ -26,6 +26,11 @@ export default async function AppLayout({
               <Link href="/leads" className="hover:text-slate-900 transition-colors">
                 Leads
               </Link>
+              {session.role === "admin" && (
+                <Link href="/admin" className="hover:text-slate-900 transition-colors">
+                  Administration
+                </Link>
+              )}
             </nav>
           </div>
           <form action={logout}>

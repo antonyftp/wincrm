@@ -63,6 +63,12 @@ export default async function LeadDetailPage({
           <span className={etapeBadgeClass(lead.etape)}>{ETAPE_LABELS[lead.etape]}</span>
         </div>
         <div className="flex items-center gap-2">
+          <a
+            href={`/api/export/leads/${lead.id}`}
+            className="inline-flex items-center px-4 py-2 text-sm font-semibold text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
+          >
+            Exporter PDF
+          </a>
           {canEdit && (
             <Link
               href={`/leads/${lead.id}/modifier`}

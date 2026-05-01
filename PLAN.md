@@ -149,7 +149,7 @@
 ---
 
 ### Phase 7 — Exports
-**Statut** : `[ ] À faire`
+**Statut** : `[x] Terminé`
 
 **Objectif** : Extraction des données en formats bureautiques.
 
@@ -163,7 +163,7 @@
 ---
 
 ### Phase 8 — Espace Admin
-**Statut** : `[ ] À faire`
+**Statut** : `[x] Terminé`
 
 **Objectif** : Gestion des utilisateurs et des inscriptions.
 
@@ -203,6 +203,6 @@
 | 4 | Recherche & Pipeline | Frontend Developer | `[x]` |
 | 5 | Suivi & Historique | Backend Architect + Frontend Developer | `[x]` |
 | 6 | Dashboard KPIs | Analytics Reporter + UI Designer | `[x]` |
-| 7 | Exports Excel/PDF | Backend Architect | `[ ]` |
-| 8 | Espace Admin | Senior Developer | `[ ]` |
+| 7 | Exports Excel/PDF | Backend Architect | `[x]` |
+| 8 | Espace Admin | Senior Developer | `[x]` |
 | 9 | Finitions & Déploiement | DevOps Automator | `[ ]` |

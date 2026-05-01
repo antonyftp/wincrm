@@ -62,6 +62,17 @@ export default async function LeadsPage({ searchParams }: { searchParams: Search
   const listHref = buildViewParam(spStrings, "list");
   const pipelineHref = buildViewParam(spStrings, "pipeline");
 
+  const exportParams = new URLSearchParams();
+  if (q) exportParams.set("q", q);
+  if (commercial) exportParams.set("commercial", commercial);
+  if (etat) exportParams.set("etat", etat);
+  if (etape) exportParams.set("etape", etape);
+  if (typeLogement) exportParams.set("typeLogement", typeLogement);
+  if (natureRecherche) exportParams.set("natureRecherche", natureRecherche);
+  if (sortBy) exportParams.set("sortBy", sortBy);
+  exportParams.set("sortDir", sortDir);
+  const exportUrl = `/api/export/leads?${exportParams.toString()}`;
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -69,12 +80,20 @@ export default async function LeadsPage({ searchParams }: { searchParams: Search
           Leads{" "}
           <span className="text-lg font-normal text-slate-500">({leads.length})</span>
         </h1>
-        <Link
-          href="/leads/nouveau"
-          className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          <span aria-hidden>+</span> Nouveau lead
-        </Link>
+        <div className="flex items-center gap-2">
+          <a
+            href={exportUrl}
+            className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
+          >
+            Exporter Excel
+          </a>
+          <Link
+            href="/leads/nouveau"
+            className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <span aria-hidden>+</span> Nouveau lead
+          </Link>
+        </div>
       </div>
 
       <Suspense fallback={null}>
