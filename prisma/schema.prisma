@@ -123,6 +123,12 @@ model Lead {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([titulaireId])
+  @@index([dateSaisie])
+  @@index([etat])
+  @@index([etape])
+  @@index([updatedAt])
 }
 
 model Comment {
@@ -133,6 +139,8 @@ model Comment {
   author    User?    @relation(fields: [authorId], references: [id], onDelete: SetNull)
   authorId  String?
   createdAt DateTime @default(now())
+
+  @@index([leadId])
 }
 
 model Action {
@@ -143,6 +151,8 @@ model Action {
   lead      Lead       @relation(fields: [leadId], references: [id], onDelete: Cascade)
   leadId    String
   createdAt DateTime   @default(now())
+
+  @@index([leadId, done, date])
 }
 
 model Visit {
@@ -152,4 +162,6 @@ model Visit {
   lead        Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
   leadId      String
   createdAt   DateTime @default(now())
+
+  @@index([leadId])
 }

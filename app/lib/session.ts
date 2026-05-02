@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { Role, UserStatut } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase/server";
@@ -25,7 +26,7 @@ const SESSION_DURATION_MS = 7 * 24 * 60 * 60 * 1000;
  * The `expiresAt` field is informative only (Supabase manages real cookie
  * expiry server-side); we return `now + 7d` as a stable placeholder.
  */
-export async function getSession(): Promise<SessionPayload | null> {
+export const getSession = cache(async (): Promise<SessionPayload | null> => {
   const supabase = await createClient();
 
   const {
@@ -52,4 +53,4 @@ export async function getSession(): Promise<SessionPayload | null> {
     statut: dbUser.statut,
     expiresAt: new Date(Date.now() + SESSION_DURATION_MS),
   };
-}
+});
