@@ -22,6 +22,24 @@ export type BilanMensuel = {
   perdus: number;
 };
 
+export type AcquisitionPoint = {
+  label: string;
+  count: number;
+};
+
+export type ProchaineAction = {
+  id: string;
+  type: string;
+  date: Date;
+  leadId: string;
+  leadPrenom: string;
+  leadNom: string;
+  leadType: string;
+  titulaireId: string | null;
+  titulairePrenom: string | null;
+  titulaireNom: string | null;
+};
+
 export type DashboardData = {
   totalLeads: number;
   nouveauxCeMois: number;
@@ -31,24 +49,26 @@ export type DashboardData = {
   leadsParEtape: LeadsParEtape[];
   tauxTransformation: number;
   bilanMensuel: BilanMensuel;
+  acquisitionParMois: AcquisitionPoint[];
+  prochainesActions: ProchaineAction[];
 };
 
-// ─── Helper: bornes du mois courant ──────────────────────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function getMoisCourantBornes(): { debut: Date; fin: Date } {
   const now = new Date();
-  const debut = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
-  const fin = new Date(now.getFullYear(), now.getMonth() + 1, 1, 0, 0, 0, 0);
-  return { debut, fin };
+  return {
+    debut: new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0),
+    fin: new Date(now.getFullYear(), now.getMonth() + 1, 1, 0, 0, 0, 0),
+  };
 }
-
-// ─── Helper: bornes du jour courant ──────────────────────────────────────────
 
 function getAujourdhuiBornes(): { debutJour: Date; finJour: Date } {
   const now = new Date();
-  const debutJour = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
-  const finJour = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0, 0);
-  return { debutJour, finJour };
+  return {
+    debutJour: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0),
+    finJour: new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0, 0),
+  };
 }
 
 // ─── Server Action ────────────────────────────────────────────────────────────
@@ -59,7 +79,12 @@ export async function getDashboardData(): Promise<DashboardData> {
 
   const { debut: debutMois, fin: finMois } = getMoisCourantBornes();
   const { debutJour, finJour } = getAujourdhuiBornes();
-  const maintenant = new Date();
+
+  // Bornes pour les 12 derniers mois (acquisition chart)
+  const debut12mois = new Date();
+  debut12mois.setMonth(debut12mois.getMonth() - 11);
+  debut12mois.setDate(1);
+  debut12mois.setHours(0, 0, 0, 0);
 
   const [
     totalLeads,
@@ -72,81 +97,73 @@ export async function getDashboardData(): Promise<DashboardData> {
     bilanPerdus,
     leadsAvecTitulaire,
     leadsSansTitulaire,
+    leadsFor12Months,
+    rawProchainesActions,
   ] = await Promise.all([
-    // KPI 1 — Total leads tous statuts
     prisma.lead.count(),
 
-    // KPI 2 — Leads nouveaux ce mois (dateSaisie dans le mois courant)
     prisma.lead.count({
-      where: {
-        dateSaisie: { gte: debutMois, lt: finMois },
-      },
+      where: { dateSaisie: { gte: debutMois, lt: finMois } },
     }),
 
-    // KPI 3 — Relances du jour (type relance, date = aujourd'hui, done = false)
     prisma.action.count({
-      where: {
-        type: "relance",
-        done: false,
-        date: { gte: debutJour, lt: finJour },
-      },
+      where: { type: "relance", done: false, date: { gte: debutJour, lt: finJour } },
     }),
 
-    // KPI 4 — Leads en retard (actions non faites dont date < aujourd'hui)
-    // Compte le nombre de leads distincts ayant au moins une action en retard
     prisma.lead.count({
-      where: {
-        actions: {
-          some: {
-            done: false,
-            date: { lt: debutJour },
-          },
-        },
-      },
+      where: { actions: { some: { done: false, date: { lt: debutJour } } } },
     }),
 
-    // KPI 6 — Répartition par étape
     prisma.lead.groupBy({
       by: ["etape"],
       _count: { _all: true },
       orderBy: { etape: "asc" },
     }),
 
-    // KPI 7 — Nombre de leads conclus (pour taux de transformation)
+    prisma.lead.count({ where: { etape: "conclu" } }),
+
     prisma.lead.count({
-      where: { etape: "conclu" },
+      where: { etape: "conclu", dateSaisie: { gte: debutMois, lt: finMois } },
     }),
 
-    // KPI 8 — Bilan mois : conclus
     prisma.lead.count({
-      where: {
-        etape: "conclu",
-        dateSaisie: { gte: debutMois, lt: finMois },
-      },
+      where: { etape: "perdu", dateSaisie: { gte: debutMois, lt: finMois } },
     }),
 
-    // KPI 8 — Bilan mois : perdus
-    prisma.lead.count({
-      where: {
-        etape: "perdu",
-        dateSaisie: { gte: debutMois, lt: finMois },
-      },
-    }),
-
-    // KPI 5 — Leads avec titulaire (groupBy titulaireId + infos user)
     prisma.lead.groupBy({
       by: ["titulaireId"],
       where: { titulaireId: { not: null } },
       _count: { _all: true },
     }),
 
-    // KPI 5 — Leads sans titulaire assigné
-    prisma.lead.count({
-      where: { titulaireId: null },
+    prisma.lead.count({ where: { titulaireId: null } }),
+
+    // Données pour le graphique d'acquisition (12 derniers mois)
+    prisma.lead.findMany({
+      where: { dateSaisie: { gte: debut12mois } },
+      select: { dateSaisie: true },
+    }),
+
+    // Prochaines 6 actions non faites
+    prisma.action.findMany({
+      where: { done: false },
+      orderBy: { date: "asc" },
+      take: 6,
+      include: {
+        lead: {
+          select: {
+            id: true,
+            prenom: true,
+            nom: true,
+            typeLogement: true,
+            titulaire: { select: { id: true, prenom: true, nom: true } },
+          },
+        },
+      },
     }),
   ]);
 
-  // ── KPI 5 : enrichir les groupes avec les noms des commerciaux ─────────────
+  // ── Commerciaux ──────────────────────────────────────────────────────────────
   const titulaireIds = leadsAvecTitulaire
     .map((g) => g.titulaireId)
     .filter((id): id is string => id !== null);
@@ -168,30 +185,51 @@ export async function getDashboardData(): Promise<DashboardData> {
         count: groupe._count._all,
       };
     }),
-    // Ajouter les non assignés si pertinent
     ...(leadsSansTitulaire > 0
-      ? [
-          {
-            titulaireId: null,
-            nom: "Non assigné",
-            prenom: "",
-            count: leadsSansTitulaire,
-          },
-        ]
+      ? [{ titulaireId: null, nom: "Non assigné", prenom: "", count: leadsSansTitulaire }]
       : []),
   ].sort((a, b) => b.count - a.count);
 
-  // ── KPI 6 : formater la répartition par étape ──────────────────────────────
+  // ── Pipeline par étape ───────────────────────────────────────────────────────
   const leadsParEtape: LeadsParEtape[] = groupByEtape.map((g) => ({
     etape: g.etape,
     count: g._count._all,
   }));
 
-  // ── KPI 7 : taux de transformation ────────────────────────────────────────
+  // ── Taux de transformation ───────────────────────────────────────────────────
   const tauxTransformation =
-    totalLeads > 0
-      ? parseFloat(((conclusTotal / totalLeads) * 100).toFixed(2))
-      : 0;
+    totalLeads > 0 ? parseFloat(((conclusTotal / totalLeads) * 100).toFixed(2)) : 0;
+
+  // ── Acquisition par mois (12 derniers mois) ───────────────────────────────────
+  const MOIS_FR = ["Jan", "Fév", "Mar", "Avr", "Mai", "Jun", "Jul", "Aoû", "Sep", "Oct", "Nov", "Déc"];
+  const acquisitionParMois: AcquisitionPoint[] = Array.from({ length: 12 }, (_, i) => {
+    const d = new Date(debut12mois.getFullYear(), debut12mois.getMonth() + i, 1);
+    return { label: MOIS_FR[d.getMonth()], count: 0 };
+  });
+
+  for (const lead of leadsFor12Months) {
+    const d = new Date(lead.dateSaisie);
+    const diffMonths =
+      (d.getFullYear() - debut12mois.getFullYear()) * 12 +
+      (d.getMonth() - debut12mois.getMonth());
+    if (diffMonths >= 0 && diffMonths < 12) {
+      acquisitionParMois[diffMonths].count++;
+    }
+  }
+
+  // ── Prochaines actions ────────────────────────────────────────────────────────
+  const prochainesActions: ProchaineAction[] = rawProchainesActions.map((a) => ({
+    id: a.id,
+    type: a.type,
+    date: a.date,
+    leadId: a.lead.id,
+    leadPrenom: a.lead.prenom,
+    leadNom: a.lead.nom,
+    leadType: a.lead.typeLogement,
+    titulaireId: a.lead.titulaire?.id ?? null,
+    titulairePrenom: a.lead.titulaire?.prenom ?? null,
+    titulaireNom: a.lead.titulaire?.nom ?? null,
+  }));
 
   return {
     totalLeads,
@@ -201,9 +239,8 @@ export async function getDashboardData(): Promise<DashboardData> {
     leadsParCommercial,
     leadsParEtape,
     tauxTransformation,
-    bilanMensuel: {
-      conclus: bilanConclus,
-      perdus: bilanPerdus,
-    },
+    bilanMensuel: { conclus: bilanConclus, perdus: bilanPerdus },
+    acquisitionParMois,
+    prochainesActions,
   };
 }

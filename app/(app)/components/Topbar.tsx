@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import ThemeToggle from "./ThemeToggle";
 
 type Props = {
   title: string;
@@ -15,6 +16,7 @@ export default function Topbar({ title, crumbs, actions }: Props) {
       </div>
       <div className="right">
         {actions}
+        <ThemeToggle />
       </div>
     </header>
   );

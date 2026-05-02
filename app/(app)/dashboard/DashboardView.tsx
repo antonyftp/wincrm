@@ -1,15 +1,56 @@
-import type { DashboardData } from "@/app/actions/dashboard";
-import { ETAPE_LABELS } from "@/app/lib/labels";
+import type { DashboardData, ProchaineAction } from "@/app/actions/dashboard";
+import { ETAPE_LABELS, ACTION_TYPE_LABELS, TYPE_LABELS } from "@/app/lib/labels";
 import { ETAPE_ORDER, ETAPE_COLORS } from "@/app/lib/etape-colors";
 import Topbar from "../components/Topbar";
 import Link from "next/link";
+import LeadsAcquisitionChart from "./LeadsAcquisitionChart";
 
 type Props = {
   data: DashboardData;
   userName: string;
 };
 
-export default function DashboardView({ data, userName }: Props) {
+function relDate(date: Date): { label: string; tone: "neg" | "warn" | "" } {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const diff = (+new Date(date) - +today) / 86400000;
+  if (diff < 0) return { label: "En retard", tone: "neg" };
+  if (diff < 1) return { label: "Aujourd'hui", tone: "warn" };
+  if (diff < 2) return { label: "Demain", tone: "" };
+  return { label: `Dans ${Math.ceil(diff)} j`, tone: "" };
+}
+
+function UpcomingRow({ action }: { action: ProchaineAction }) {
+  const { label, tone } = relDate(action.date);
+  const initials = action.titulairePrenom && action.titulaireNom
+    ? `${action.titulairePrenom[0]}${action.titulaireNom[0]}`.toUpperCase()
+    : "—";
+
+  return (
+    <tr>
+      <td>
+        <Link href={`/leads/${action.leadId}`} style={{ textDecoration: "none", color: "inherit" }}>
+          <div className="bold">{action.leadPrenom} {action.leadNom}</div>
+          <div className="muted" style={{ fontSize: 12 }}>{TYPE_LABELS[action.leadType as keyof typeof TYPE_LABELS] ?? action.leadType}</div>
+        </Link>
+      </td>
+      <td><span className="badge info"><span className="dot" />{ACTION_TYPE_LABELS[action.type as keyof typeof ACTION_TYPE_LABELS] ?? action.type}</span></td>
+      <td><span className={`badge ${tone}`}>{label}</span></td>
+      <td>
+        {action.titulaireId ? (
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <span className="avatar avatar-sm" style={{ background: "var(--accent)" }}>{initials}</span>
+            <span style={{ fontSize: 13 }}>{action.titulairePrenom}</span>
+          </div>
+        ) : (
+          <span className="muted" style={{ fontSize: 13, fontStyle: "italic" }}>Non assigné</span>
+        )}
+      </td>
+    </tr>
+  );
+}
+
+export default function DashboardView({ data }: Props) {
   const {
     totalLeads,
     nouveauxCeMois,
@@ -18,7 +59,8 @@ export default function DashboardView({ data, userName }: Props) {
     leadsParCommercial,
     leadsParEtape,
     tauxTransformation,
-    bilanMensuel,
+    acquisitionParMois,
+    prochainesActions,
   } = data;
 
   const etapesTriees = ETAPE_ORDER.map((etape) => {
@@ -28,9 +70,6 @@ export default function DashboardView({ data, userName }: Props) {
 
   const maxEtape = Math.max(...etapesTriees.map((e) => e.count), 1);
   const maxCommercial = leadsParCommercial[0]?.count ?? 1;
-
-  const totalGP = bilanMensuel.conclus + bilanMensuel.perdus;
-  const pctGagnes = totalGP > 0 ? Math.round((bilanMensuel.conclus / totalGP) * 100) : 0;
 
   return (
     <>
@@ -73,7 +112,7 @@ export default function DashboardView({ data, userName }: Props) {
               </span>
             </div>
             <div className="value">{nouveauxCeMois}</div>
-            <div className="delta neutral">leads créés</div>
+            <div className="delta neutral">acquisitions</div>
           </div>
 
           <div className="stat">
@@ -103,8 +142,17 @@ export default function DashboardView({ data, userName }: Props) {
           </div>
         </div>
 
-        {/* Pipeline par étape + commerciaux */}
+        {/* Acquisition chart + Pipeline */}
         <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: 16, marginBottom: 16 }}>
+          <div className="card">
+            <div className="card-h">
+              <h3>Acquisition de leads</h3>
+            </div>
+            <div className="card-b">
+              <LeadsAcquisitionChart data={acquisitionParMois} />
+            </div>
+          </div>
+
           <div className="card">
             <div className="card-h">
               <h3>Pipeline par étape</h3>
@@ -127,6 +175,41 @@ export default function DashboardView({ data, userName }: Props) {
                 {etapesTriees.length === 0 && <p className="muted" style={{ fontSize: 13, margin: 0 }}>Aucune donnée</p>}
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Prochaines actions + Performance commerciaux */}
+        <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: 16 }}>
+          <div className="card">
+            <div className="card-h">
+              <h3>Prochaines actions</h3>
+              <Link href="/leads" className="meta" style={{ color: "var(--accent)", textDecoration: "none", fontWeight: 500 }}>
+                Voir tout →
+              </Link>
+            </div>
+            {prochainesActions.length > 0 ? (
+              <div className="card-b flush">
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>Lead</th>
+                      <th>Action</th>
+                      <th>Quand</th>
+                      <th>Commercial</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {prochainesActions.map((action) => (
+                      <UpcomingRow key={action.id} action={action} />
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="card-b">
+                <p className="muted" style={{ fontSize: 13, margin: 0 }}>Aucune action planifiée.</p>
+              </div>
+            )}
           </div>
 
           <div className="card">
@@ -157,57 +240,6 @@ export default function DashboardView({ data, userName }: Props) {
                   );
                 })}
                 {leadsParCommercial.length === 0 && <p className="muted" style={{ fontSize: 13, margin: 0 }}>Aucune donnée</p>}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Bilan mensuel */}
-        <div className="card">
-          <div className="card-h">
-            <h3>Bilan du mois</h3>
-            <span className="meta">Deals finalisés</span>
-          </div>
-          <div className="card-b">
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24 }}>
-              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                <p className="h-eyebrow">Taux de transformation</p>
-                <div style={{ display: "flex", alignItems: "flex-end", gap: 4 }}>
-                  <span style={{ fontSize: 36, fontWeight: 700, letterSpacing: "-0.02em", lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>
-                    {tauxTransformation.toFixed(1)}
-                  </span>
-                  <span style={{ fontSize: 18, fontWeight: 600, color: "var(--text-soft)", marginBottom: 2 }}>%</span>
-                </div>
-                <div className="bar"><i style={{ width: `${Math.min(tauxTransformation, 100)}%` }} /></div>
-                <p className="muted" style={{ fontSize: 12, margin: 0 }}>Leads convertis en vente</p>
-              </div>
-
-              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                <p className="h-eyebrow">Leads gagnés</p>
-                <div style={{ display: "flex", alignItems: "flex-end", gap: 8 }}>
-                  <span style={{ fontSize: 36, fontWeight: 700, letterSpacing: "-0.02em", lineHeight: 1, color: "var(--pos)", fontVariantNumeric: "tabular-nums" }}>
-                    {bilanMensuel.conclus}
-                  </span>
-                  {totalGP > 0 && (
-                    <span className="badge pos" style={{ marginBottom: 4 }}>+{pctGagnes}%</span>
-                  )}
-                </div>
-                <div className="bar"><i style={{ width: totalGP > 0 ? `${pctGagnes}%` : "0%", background: "var(--pos)" }} /></div>
-                <p className="muted" style={{ fontSize: 12, margin: 0 }}>Sur {totalGP} deal{totalGP > 1 ? "s" : ""} ce mois</p>
-              </div>
-
-              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                <p className="h-eyebrow">Leads perdus</p>
-                <div style={{ display: "flex", alignItems: "flex-end", gap: 8 }}>
-                  <span style={{ fontSize: 36, fontWeight: 700, letterSpacing: "-0.02em", lineHeight: 1, color: "var(--neg)", fontVariantNumeric: "tabular-nums" }}>
-                    {bilanMensuel.perdus}
-                  </span>
-                  {bilanMensuel.perdus > 0 && (
-                    <span className="badge neg" style={{ marginBottom: 4 }}>{100 - pctGagnes}%</span>
-                  )}
-                </div>
-                <div className="bar"><i style={{ width: totalGP > 0 ? `${100 - pctGagnes}%` : "0%", background: "var(--neg)" }} /></div>
-                <p className="muted" style={{ fontSize: 12, margin: 0 }}>Opportunités non abouties</p>
               </div>
             </div>
           </div>
