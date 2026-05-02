@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getLead, getCommercials, updateLead } from "@/app/actions/leads";
 import LeadForm from "../../components/LeadForm";
+import Topbar from "../../../components/Topbar";
 
 export default async function ModifierLeadPage({
   params,
@@ -17,29 +18,25 @@ export default async function ModifierLeadPage({
   if (!lead) notFound();
 
   const commercials = Array.isArray(commercialsResult) ? commercialsResult : [];
-
   const action = updateLead.bind(null, id);
 
   return (
-    <div>
-      <div className="flex items-center gap-3 mb-6">
-        <Link
-          href="/leads"
-          className="text-sm text-slate-500 hover:text-slate-700 transition-colors"
-        >
-          ← Leads
-        </Link>
-        <span className="text-slate-300">/</span>
-        <Link
-          href={`/leads/${id}`}
-          className="text-sm text-slate-500 hover:text-slate-700 transition-colors"
-        >
-          {lead.prenom} {lead.nom}
-        </Link>
-        <span className="text-slate-300">/</span>
-        <h1 className="text-2xl font-bold text-slate-900">Modifier</h1>
+    <>
+      <Topbar
+        title="Modifier le lead"
+        crumbs={
+          <>
+            <Link href="/leads" style={{ color: "var(--text-soft)", textDecoration: "none" }}>Leads</Link>
+            {" / "}
+            <Link href={`/leads/${id}`} style={{ color: "var(--text-soft)", textDecoration: "none" }}>
+              {lead.prenom} {lead.nom}
+            </Link>
+          </>
+        }
+      />
+      <div className="content">
+        <LeadForm mode="edit" lead={lead} commercials={commercials} action={action} />
       </div>
-      <LeadForm mode="edit" lead={lead} commercials={commercials} action={action} />
-    </div>
+    </>
   );
 }

@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>WIN CRM — Fiche lead</title>
+<link rel="stylesheet" href="styles/system.css" />
+<style>
+  .lead-grid { display: grid; grid-template-columns: 1fr 320px; gap: 16px; }
+  .info-row { display: grid; grid-template-columns: 140px 1fr; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13.5px; }
+  .info-row:last-child { border-bottom: none; }
+  .info-row .lbl { color: var(--text-soft); }
+  .info-row .val { font-weight: 500; }
+  .stage-stepper { display: flex; gap: 4px; padding: 16px 18px; overflow-x: auto; }
+  .step { flex: 1; min-width: 80px; height: 36px; border-radius: 6px; background: var(--surface-2); color: var(--text-soft); display: flex; align-items: center; justify-content: center; font-size: 11.5px; font-weight: 500; padding: 0 8px; text-align: center; position: relative; }
+  .step.done { background: var(--accent-soft); color: var(--accent); }
+  .step.current { background: var(--accent); color: white; }
+  .quick-action { display: flex; flex-direction: column; gap: 4px; padding: 10px; background: var(--surface-2); border-radius: var(--r); cursor: pointer; transition: background .12s; align-items: center; text-align: center; border: none; color: var(--text-muted); font: inherit; }
+  .quick-action:hover { background: var(--accent-soft-2); color: var(--accent); }
+  .quick-action .lbl { font-size: 11.5px; font-weight: 500; }
+</style>
+</head>
+<body>
+  <div class="app" id="app"></div>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+  <script src="js/data.js"></script>
+  <script type="text/babel" src="js/chrome.jsx"></script>
+
+  <script type="text/babel">
+    const { useState } = React;
+
+    function App() {
+      const params = new URLSearchParams(location.search);
+      const id = params.get("id") || "L-10482";
+      const lead = WIN.LEADS.find((l) => l.id === id) || WIN.LEADS[0];
+      const [tab, setTab] = useState("activity");
+
+      const events = [
+        { type: "Appel", who: lead.agent.name, when: "Aujourd'hui · 10:24", text: "Premier contact établi. Le client cherche un T3 ou T4 dans le 11e arrondissement, budget confirmé.", icon: "phone", tone: "accent" },
+        { type: "Email envoyé", who: lead.agent.name, when: "Hier · 16:12", text: "Envoi de 3 fiches de biens correspondant aux critères.", icon: "mail", tone: "info" },
+        { type: "Visite programmée", who: lead.agent.name, when: "Il y a 2j · 09:30", text: "Visite organisée pour le 28 mai 14h — 45 rue Saint-Maur.", icon: "cal", tone: "" },
+        { type: "Lead créé", who: "Système", when: "Il y a 5j", text: `Lead ${lead.id} créé via formulaire de contact.`, icon: "plus", tone: "" },
+      ];
+
+      return (
+        <>
+          <Sidebar active="LEADS" />
+          <main className="main">
+            <Topbar
+              title={`${lead.firstName} ${lead.lastName}`}
+              crumbs={<><a href="leads.html" style={{ color: "var(--text-soft)", textDecoration: "none" }}>Leads</a> &nbsp;/&nbsp; {lead.id}</>}
+              actions={<>
+                <button className="btn btn-sm"><Icon name="edit" size={14} /> Modifier</button>
+                <button className="btn btn-sm"><Icon name="download" size={14} /> Export PDF</button>
+                <button className="btn btn-sm btn-danger"><Icon name="trash" size={14} /> Supprimer</button>
+              </>}
+            />
+            <div className="content">
+              <div className="card" style={{ marginBottom: 16 }}>
+                <div style={{ padding: "20px 24px", display: "flex", gap: 20, alignItems: "center" }}>
+                  <Avatar id={lead.firstName[0] + lead.lastName[0]} color={lead.agent.color} size="avatar-lg" />
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 4 }}>
+                      <h2 style={{ margin: 0, fontSize: 22, fontWeight: 700, letterSpacing: "-0.02em" }}>{lead.genre} {lead.firstName} {lead.lastName}</h2>
+                      <Stage stage={lead.stage} />
+                      <Badge tone={WIN.STATES[lead.state].tone} dot>{WIN.STATES[lead.state].label}</Badge>
+                    </div>
+                    <div style={{ display: "flex", gap: 16, fontSize: 13, color: "var(--text-soft)" }}>
+                      <span>📞 {lead.phone}</span>
+                      <span>✉ {lead.email}</span>
+                      <span>📍 {lead.city}</span>
+                    </div>
+                  </div>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 64px)", gap: 8 }}>
+                    <button className="quick-action"><Icon name="phone" size={16} /><span className="lbl">Appeler</span></button>
+                    <button className="quick-action"><Icon name="mail" size={16} /><span className="lbl">Email</span></button>
+                    <button className="quick-action"><Icon name="cal" size={16} /><span className="lbl">RDV</span></button>
+                    <button className="quick-action"><Icon name="home2" size={16} /><span className="lbl">Visite</span></button>
+                  </div>
+                </div>
+
+                <div style={{ borderTop: "1px solid var(--border)" }}>
+                  <div className="stage-stepper">
+                    {WIN.STAGES.map((s) => (
+                      <div key={s.id} className={`step ${s.id < lead.stageId ? "done" : s.id === lead.stageId ? "current" : ""}`} title={s.label}>
+                        {s.id}. {s.label.split(" ")[0]}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="lead-grid">
+                <div>
+                  <div className="card">
+                    <div className="tabs">
+                      <button className={`tab ${tab === "activity" ? "active" : ""}`} onClick={() => setTab("activity")}>Activité</button>
+                      <button className={`tab ${tab === "comments" ? "active" : ""}`} onClick={() => setTab("comments")}>Commentaires</button>
+                      <button className={`tab ${tab === "visits" ? "active" : ""}`} onClick={() => setTab("visits")}>Visites ({lead.visits})</button>
+                    </div>
+                    <div className="card-b">
+                      {tab === "activity" && (
+                        <>
+                          <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+                            <input className="input" placeholder="Ajouter une note ou un commentaire..." style={{ flex: 1 }} />
+                            <button className="btn btn-primary"><Icon name="check" size={14} /> Publier</button>
+                          </div>
+                          <div className="tl">
+                            {events.map((e, i) => (
+                              <div className="tl-item" key={i}>
+                                <div className={`tl-ico ${e.tone}`} dangerouslySetInnerHTML={{ __html: WIN.icon(e.icon, 16) }}></div>
+                                <div className="tl-content">
+                                  <div className="tl-h">
+                                    <h4>{e.type}</h4>
+                                    <span className="muted">par {e.who}</span>
+                                    <span className="when">· {e.when}</span>
+                                  </div>
+                                  <p>{e.text}</p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </>
+                      )}
+                      {tab === "comments" && (
+                        <div className="empty">Aucun commentaire pour le moment.</div>
+                      )}
+                      {tab === "visits" && (
+                        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                          {Array.from({ length: lead.visits }).map((_, i) => (
+                            <div key={i} style={{ padding: 14, border: "1px solid var(--border)", borderRadius: 8, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                              <div>
+                                <div className="bold">{lead.type} · {lead.city}</div>
+                                <div className="muted" style={{ fontSize: 12 }}>Visite #{i+1} · 28 mai 2024 · 14h00</div>
+                              </div>
+                              <Badge tone="pos" dot>Effectuée</Badge>
+                            </div>
+                          ))}
+                          {lead.visits === 0 && <div className="empty">Aucune visite enregistrée.</div>}
+                          <button className="btn btn-sm" style={{ alignSelf: "flex-start", marginTop: 8 }}><Icon name="plus" size={14} /> Ajouter une visite</button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                  <div className="card">
+                    <div className="card-h"><h3>Prochaine action</h3></div>
+                    <div className="card-b">
+                      <div style={{ padding: 14, background: "var(--accent-soft-2)", borderRadius: 8, border: "1px solid var(--accent-soft)" }}>
+                        <div className="row between" style={{ marginBottom: 8 }}>
+                          <Badge tone="accent" dot>{lead.nextActionType}</Badge>
+                          <span className="bold" style={{ color: "var(--accent)", fontSize: 13 }}>{WIN.fmt.rel(lead.nextAction)}</span>
+                        </div>
+                        <div className="bold" style={{ fontSize: 13 }}>{WIN.fmt.date(lead.nextAction)}</div>
+                      </div>
+                      <button className="btn btn-sm btn-full" style={{ marginTop: 12 }}><Icon name="cal" size={14} /> Reprogrammer</button>
+                    </div>
+                  </div>
+
+                  <div className="card">
+                    <div className="card-h"><h3>Coordonnées</h3></div>
+                    <div className="card-b" style={{ padding: "0 18px" }}>
+                      <div className="info-row"><span className="lbl">Genre</span><span className="val">{lead.genre}</span></div>
+                      <div className="info-row"><span className="lbl">Âge</span><span className="val">{lead.age} ans</span></div>
+                      <div className="info-row"><span className="lbl">Email</span><span className="val">{lead.email}</span></div>
+                      <div className="info-row"><span className="lbl">Téléphone</span><span className="val">{lead.phone}</span></div>
+                      <div className="info-row"><span className="lbl">Situation</span><span className="val">{lead.maritalStatus}</span></div>
+                      <div className="info-row"><span className="lbl">Héritier</span><span className="val">{lead.heir ? "Oui" : "Non"}</span></div>
+                    </div>
+                  </div>
+
+                  <div className="card">
+                    <div className="card-h"><h3>Projet immobilier</h3></div>
+                    <div className="card-b" style={{ padding: "0 18px" }}>
+                      <div className="info-row"><span className="lbl">Nature</span><span className="val"><Badge tone="info">{lead.nature}</Badge></span></div>
+                      <div className="info-row"><span className="lbl">Type</span><span className="val">{lead.type}</span></div>
+                      <div className="info-row"><span className="lbl">Budget min.</span><span className="val tnum">{WIN.fmt.money(lead.budgetMin)}</span></div>
+                      <div className="info-row"><span className="lbl">Budget max.</span><span className="val tnum">{WIN.fmt.money(lead.budgetMax)}</span></div>
+                      <div className="info-row"><span className="lbl">Critères</span><span className="val">{lead.criteria || "—"}</span></div>
+                    </div>
+                  </div>
+
+                  <div className="card">
+                    <div className="card-h"><h3>Suivi commercial</h3></div>
+                    <div className="card-b" style={{ padding: "0 18px" }}>
+                      <div className="info-row"><span className="lbl">Commercial</span>
+                        <span className="val" style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                          <Avatar id={lead.agent.id} name={lead.agent.name} color={lead.agent.color} size="avatar-sm" />
+                          {lead.agent.name}
+                        </span>
+                      </div>
+                      <div className="info-row"><span className="lbl">Saisi le</span><span className="val">{WIN.fmt.date(lead.createdAt)}</span></div>
+                      <div className="info-row"><span className="lbl">Identifiant</span><span className="val muted">{lead.id}</span></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </main>
+        </>
+      );
+    }
+    ReactDOM.createRoot(document.getElementById("app")).render(<App />);
+  </script>
+</body>
+</html>

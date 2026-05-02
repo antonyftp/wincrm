@@ -7,6 +7,7 @@ import DeleteButton from "./components/DeleteButton";
 import LeadsFilters from "./components/LeadsFilters";
 import PipelineView from "./components/PipelineView";
 import LeadsARelancer from "./components/LeadsARelancer";
+import Topbar from "../components/Topbar";
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
@@ -74,170 +75,134 @@ export default async function LeadsPage({ searchParams }: { searchParams: Search
   const exportUrl = `/api/export/leads?${exportParams.toString()}`;
 
   return (
-    <div>
-      <div className="flex flex-wrap items-start justify-between gap-3 mb-6">
-        <h1 className="text-2xl font-bold text-slate-900">
-          Leads{" "}
-          <span className="text-lg font-normal text-slate-500">({leads.length})</span>
-        </h1>
-        <div className="flex flex-wrap items-center gap-2">
-          <a
-            href={exportUrl}
-            className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
-          >
-            Exporter Excel
-          </a>
-          <Link
-            href="/leads/nouveau"
-            className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            <span aria-hidden>+</span> Nouveau lead
-          </Link>
-        </div>
-      </div>
+    <>
+      <Topbar
+        title="Leads"
+        crumbs={`${leads.length} contacts dans votre base`}
+        actions={
+          <>
+            <div style={{ display: "flex", border: "1px solid var(--border-strong)", borderRadius: 8, overflow: "hidden" }}>
+              <Link
+                href={listHref}
+                className={`btn btn-sm${view !== "pipeline" ? " btn-primary" : " btn-ghost"}`}
+                style={{ borderRadius: 0, border: "none" }}
+              >
+                Liste
+              </Link>
+              <Link
+                href={pipelineHref}
+                className={`btn btn-sm${view === "pipeline" ? " btn-primary" : " btn-ghost"}`}
+                style={{ borderRadius: 0, border: "none" }}
+              >
+                Pipeline
+              </Link>
+            </div>
+            <a href={exportUrl} className="btn btn-sm">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/>
+              </svg>
+              Exporter
+            </a>
+            <Link href="/leads/nouveau" className="btn btn-primary btn-sm">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <path d="M12 5v14M5 12h14"/>
+              </svg>
+              Nouveau lead
+            </Link>
+          </>
+        }
+      />
 
-      <Suspense fallback={null}>
-        <LeadsARelancer />
-      </Suspense>
+      <div className="content">
+        <Suspense fallback={null}>
+          <LeadsARelancer />
+        </Suspense>
 
-      <LeadsFilters commercials={commercials} />
-
-      <div className="flex gap-1 mb-4">
-        <Link
-          href={listHref}
-          className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-            view !== "pipeline"
-              ? "bg-blue-600 text-white shadow-sm"
-              : "text-slate-600 hover:bg-slate-100"
-          }`}
-        >
-          Liste
-        </Link>
-        <Link
-          href={pipelineHref}
-          className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-            view === "pipeline"
-              ? "bg-blue-600 text-white shadow-sm"
-              : "text-slate-600 hover:bg-slate-100"
-          }`}
-        >
-          Pipeline
-        </Link>
-      </div>
-
-      {view === "pipeline" ? (
-        <PipelineView leads={leads} />
-      ) : leads.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mb-4">
-            <svg
-              className="w-8 h-8 text-slate-400"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={1.5}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"
-              />
-            </svg>
+        <div className="card" style={{ marginBottom: 16 }}>
+          <div className="filter-bar" style={{ display: "flex", gap: 8, alignItems: "center", padding: "14px 18px", flexWrap: "wrap" }}>
+            <LeadsFilters commercials={commercials} />
           </div>
-          <p className="text-slate-600 font-medium">Aucun lead pour l'instant</p>
-          <p className="text-slate-400 text-sm mt-1">
-            Commencez par créer votre premier lead.
-          </p>
-          <Link
-            href="/leads/nouveau"
-            className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            Créer un lead
-          </Link>
         </div>
-      ) : (
-        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-slate-200 bg-slate-50">
-                  <th className="text-left px-4 py-3 font-semibold text-slate-600">
-                    Nom / Prénom
-                  </th>
-                  <th className="text-left px-4 py-3 font-semibold text-slate-600">
-                    État
-                  </th>
-                  <th className="text-left px-4 py-3 font-semibold text-slate-600">
-                    Étape
-                  </th>
-                  <th className="text-left px-4 py-3 font-semibold text-slate-600">
-                    Commercial
-                  </th>
-                  <th className="text-left px-4 py-3 font-semibold text-slate-600">
-                    Date saisie
-                  </th>
-                  <th className="text-right px-4 py-3 font-semibold text-slate-600">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {leads.map((lead) => {
-                  const canEdit =
-                    isAdmin ||
-                    lead.titulaireId === null ||
-                    lead.titulaireId === session?.userId;
 
-                  return (
-                    <tr key={lead.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="px-4 py-3 font-medium text-slate-900">
-                        {lead.nom} {lead.prenom}
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className={etatBadgeClass(lead.etat)}>
-                          {ETAT_LABELS[lead.etat]}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-slate-600">
-                        {ETAPE_LABELS[lead.etape]}
-                      </td>
-                      <td className="px-4 py-3 text-slate-600">
-                        {lead.titulaire ? (
-                          `${lead.titulaire.prenom} ${lead.titulaire.nom}`
-                        ) : (
-                          <span className="text-slate-400 italic">Non assigné</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 text-slate-500">
-                        {new Date(lead.dateSaisie).toLocaleDateString("fr-FR")}
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center justify-end gap-2">
-                          <Link
-                            href={`/leads/${lead.id}`}
-                            className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-slate-700 bg-slate-100 rounded-md hover:bg-slate-200 transition-colors"
-                          >
-                            Voir
-                          </Link>
-                          {canEdit && (
-                            <Link
-                              href={`/leads/${lead.id}/modifier`}
-                              className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-blue-700 bg-blue-50 rounded-md hover:bg-blue-100 transition-colors"
-                            >
-                              Modifier
+        {view === "pipeline" ? (
+          <PipelineView leads={leads} />
+        ) : leads.length === 0 ? (
+          <div className="empty" style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--r-lg)" }}>
+            <p className="bold" style={{ margin: "0 0 4px" }}>Aucun lead pour l&apos;instant</p>
+            <p style={{ margin: "0 0 16px" }}>Commencez par créer votre premier lead.</p>
+            <Link href="/leads/nouveau" className="btn btn-primary">
+              Créer un lead
+            </Link>
+          </div>
+        ) : (
+          <div className="card">
+            <div style={{ overflowX: "auto" }}>
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Contact</th>
+                    <th>État</th>
+                    <th>Étape</th>
+                    <th>Commercial</th>
+                    <th>Date saisie</th>
+                    <th style={{ textAlign: "right" }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {leads.map((lead) => {
+                    const canEdit =
+                      isAdmin ||
+                      lead.titulaireId === null ||
+                      lead.titulaireId === session?.userId;
+
+                    const initials = `${lead.prenom[0] ?? ""}${lead.nom[0] ?? ""}`.toUpperCase();
+
+                    return (
+                      <tr key={lead.id}>
+                        <td>
+                          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                            <span className="avatar" style={{ background: "var(--accent)" }}>{initials}</span>
+                            <div>
+                              <div className="bold">{lead.nom} {lead.prenom}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td>
+                          <span className={etatBadgeClass(lead.etat)}>
+                            {ETAT_LABELS[lead.etat]}
+                          </span>
+                        </td>
+                        <td className="muted">{ETAPE_LABELS[lead.etape]}</td>
+                        <td className="muted">
+                          {lead.titulaire
+                            ? `${lead.titulaire.prenom} ${lead.titulaire.nom}`
+                            : <span style={{ fontStyle: "italic" }}>Non assigné</span>}
+                        </td>
+                        <td className="muted" style={{ fontSize: 12 }}>
+                          {new Date(lead.dateSaisie).toLocaleDateString("fr-FR")}
+                        </td>
+                        <td>
+                          <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 6 }}>
+                            <Link href={`/leads/${lead.id}`} className="btn btn-sm btn-ghost">
+                              Voir
                             </Link>
-                          )}
-                          {isAdmin && <DeleteButton id={lead.id} />}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                            {canEdit && (
+                              <Link href={`/leads/${lead.id}/modifier`} className="btn btn-sm">
+                                Modifier
+                              </Link>
+                            )}
+                            {isAdmin && <DeleteButton id={lead.id} />}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </>
   );
 }

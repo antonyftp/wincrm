@@ -21,171 +21,120 @@ export default function RegisterPage() {
 
   if (state && "success" in state) {
     return (
-      <div className="w-full max-w-md">
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 px-8 py-10 text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-50">
-            <svg
-              className="h-6 w-6 text-green-600"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={2}
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M4.5 12.75l6 6 9-13.5"
-              />
-            </svg>
+      <div className="auth">
+        <div className="auth-stage">
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ width: 36, height: 36, background: "rgba(255,255,255,0.18)", borderRadius: 8, display: "grid", placeItems: "center", fontWeight: 700, fontSize: 16 }}>
+              W
+            </div>
+            <div style={{ fontWeight: 700, fontSize: 17, letterSpacing: "-0.01em" }}>WIN CRM</div>
           </div>
-          <h2 className="text-lg font-semibold text-slate-900">
-            Demande envoyée
-          </h2>
-          <p className="mt-2 text-sm text-slate-600">
-            Votre demande a été envoyée. Un administrateur validera votre compte
-            sous peu.
-          </p>
-          <Link
-            href="/login"
-            className="mt-6 inline-block text-sm font-medium text-slate-900 underline-offset-4 hover:underline"
-          >
-            Retour à la connexion
-          </Link>
+          <div>
+            <h2 style={{ fontSize: 38, fontWeight: 700, lineHeight: 1.15, letterSpacing: "-0.02em", margin: "0 0 16px" }}>
+              Bienvenue dans l&apos;équipe.
+            </h2>
+            <p style={{ fontSize: 15, lineHeight: 1.6, opacity: 0.9, margin: 0 }}>
+              Votre demande d&apos;accès a été transmise à l&apos;administrateur.
+            </p>
+          </div>
+          <div style={{ fontSize: 12, opacity: 0.75 }}>© 2024 WIN CRM · Application interne</div>
+        </div>
+        <div className="auth-form">
+          <div style={{ maxWidth: 380, width: "100%", margin: "auto 0", textAlign: "center" }}>
+            <div style={{ width: 48, height: 48, background: "var(--accent-soft)", borderRadius: 999, display: "grid", placeItems: "center", margin: "0 auto 20px" }}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20 6 9 17l-5-5" />
+              </svg>
+            </div>
+            <h2 style={{ fontSize: 22, fontWeight: 700, margin: "0 0 10px", letterSpacing: "-0.02em" }}>
+              Demande envoyée
+            </h2>
+            <p style={{ color: "var(--text-soft)", fontSize: 14, lineHeight: 1.6, margin: "0 0 28px" }}>
+              Votre demande a été envoyée. Un administrateur validera votre compte sous peu.
+            </p>
+            <Link href="/login" className="btn btn-primary btn-lg btn-full">
+              Retour à la connexion
+            </Link>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="w-full max-w-md">
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 px-8 py-10">
-        <div className="mb-8 text-center">
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-            WIN CRM
-          </h1>
-          <p className="mt-1 text-sm text-slate-500">
-            Créer un compte — accès soumis à validation
+    <div className="auth">
+      <div className="auth-stage">
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ width: 36, height: 36, background: "rgba(255,255,255,0.18)", borderRadius: 8, display: "grid", placeItems: "center", fontWeight: 700, fontSize: 16 }}>
+            W
+          </div>
+          <div style={{ fontWeight: 700, fontSize: 17, letterSpacing: "-0.01em" }}>WIN CRM</div>
+        </div>
+        <div>
+          <h2 style={{ fontSize: 38, fontWeight: 700, lineHeight: 1.15, letterSpacing: "-0.02em", margin: "0 0 16px", maxWidth: 480 }}>
+            Rejoignez votre équipe commerciale.
+          </h2>
+          <p style={{ fontSize: 15, lineHeight: 1.6, opacity: 0.9, maxWidth: 440, margin: 0 }}>
+            Créez votre compte pour accéder à l&apos;espace de travail partagé. L&apos;accès est validé par un administrateur.
           </p>
         </div>
+        <div style={{ fontSize: 12, opacity: 0.75 }}>© 2024 WIN CRM · Application interne</div>
+      </div>
 
-        <form action={formAction} className="space-y-4">
-          {state && "error" in state && (
-            <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
-              {state.error}
+      <div className="auth-form">
+        <div style={{ maxWidth: 380, width: "100%", margin: "auto 0" }}>
+          <h2 style={{ fontSize: 24, fontWeight: 700, margin: "0 0 8px", letterSpacing: "-0.02em" }}>
+            Créer un compte
+          </h2>
+          <p style={{ color: "var(--text-soft)", margin: "0 0 28px", fontSize: 14 }}>
+            Accès soumis à validation administrateur.
+          </p>
+
+          <form action={formAction} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            {state && "error" in state && (
+              <div className="badge neg" style={{ padding: "10px 14px", borderRadius: "var(--r)", fontSize: 13, lineHeight: 1.5 }}>
+                {state.error}
+              </div>
+            )}
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              <div className="field">
+                <label className="field-label" htmlFor="prenom">Prénom</label>
+                <input id="prenom" name="prenom" type="text" autoComplete="given-name" required className="input" placeholder="Jean" />
+              </div>
+              <div className="field">
+                <label className="field-label" htmlFor="nom">Nom</label>
+                <input id="nom" name="nom" type="text" autoComplete="family-name" required className="input" placeholder="Dupont" />
+              </div>
             </div>
-          )}
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label
-                htmlFor="prenom"
-                className="block text-sm font-medium text-slate-700 mb-1.5"
-              >
-                Prénom
-              </label>
-              <input
-                id="prenom"
-                name="prenom"
-                type="text"
-                autoComplete="given-name"
-                required
-                className="w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-900/10"
-                placeholder="Jean"
-              />
+            <div className="field">
+              <label className="field-label" htmlFor="email">Email</label>
+              <input id="email" name="email" type="email" autoComplete="email" required className="input" placeholder="vous@exemple.com" />
             </div>
-            <div>
-              <label
-                htmlFor="nom"
-                className="block text-sm font-medium text-slate-700 mb-1.5"
-              >
-                Nom
-              </label>
-              <input
-                id="nom"
-                name="nom"
-                type="text"
-                autoComplete="family-name"
-                required
-                className="w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-900/10"
-                placeholder="Dupont"
-              />
+
+            <div className="field">
+              <label className="field-label" htmlFor="password">Mot de passe</label>
+              <input id="password" name="password" type="password" autoComplete="new-password" required minLength={8} className="input" placeholder="Minimum 8 caractères" />
             </div>
+
+            <div className="field">
+              <label className="field-label" htmlFor="confirm">Confirmer le mot de passe</label>
+              <input id="confirm" name="confirm" type="password" autoComplete="new-password" required minLength={8} className="input" placeholder="••••••••" />
+            </div>
+
+            <button type="submit" disabled={pending} className="btn btn-primary btn-lg btn-full">
+              {pending ? "Envoi en cours…" : "Envoyer la demande"}
+            </button>
+          </form>
+
+          <div style={{ textAlign: "center", padding: "24px 0", color: "var(--text-soft)", fontSize: 13 }}>
+            Déjà un compte ?{" "}
+            <Link href="/login" style={{ color: "var(--accent)", fontWeight: 500, textDecoration: "none", marginLeft: 4 }}>
+              Se connecter
+            </Link>
           </div>
-
-          <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-slate-700 mb-1.5"
-            >
-              Adresse email
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              autoComplete="email"
-              required
-              className="w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-900/10"
-              placeholder="vous@exemple.com"
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-slate-700 mb-1.5"
-            >
-              Mot de passe
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              autoComplete="new-password"
-              required
-              minLength={8}
-              className="w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-900/10"
-              placeholder="Minimum 8 caractères"
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor="confirm"
-              className="block text-sm font-medium text-slate-700 mb-1.5"
-            >
-              Confirmer le mot de passe
-            </label>
-            <input
-              id="confirm"
-              name="confirm"
-              type="password"
-              autoComplete="new-password"
-              required
-              minLength={8}
-              className="w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-900/10"
-              placeholder="••••••••"
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={pending}
-            className="w-full rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700 disabled:opacity-60 disabled:cursor-not-allowed"
-          >
-            {pending ? "Envoi en cours…" : "Envoyer la demande"}
-          </button>
-        </form>
-
-        <p className="mt-6 text-center text-sm text-slate-500">
-          Déjà un compte ?{" "}
-          <Link
-            href="/login"
-            className="font-medium text-slate-900 underline-offset-4 hover:underline"
-          >
-            Se connecter
-          </Link>
-        </p>
+        </div>
       </div>
     </div>
   );

@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>WIN CRM — Leads</title>
+<link rel="stylesheet" href="styles/system.css" />
+<style>
+  .filter-bar { display: flex; gap: 8px; align-items: center; padding: 14px 18px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+  .filter-bar .input { height: 36px; }
+  .pagination { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; border-top: 1px solid var(--border); font-size: 13px; color: var(--text-soft); }
+  .page-btns { display: flex; gap: 4px; }
+  .page-btns button { width: 30px; height: 30px; border: 1px solid var(--border); background: var(--surface); border-radius: 6px; cursor: pointer; color: var(--text-muted); font-weight: 500; font-size: 12px; }
+  .page-btns button.active { background: var(--accent); color: white; border-color: var(--accent); }
+</style>
+</head>
+<body>
+  <div class="app" id="app"></div>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+  <script src="js/data.js"></script>
+  <script type="text/babel" src="js/chrome.jsx"></script>
+
+  <script type="text/babel">
+    const { useState, useMemo } = React;
+
+    function App() {
+      const [q, setQ] = useState("");
+      const [stageFilter, setStageFilter] = useState("");
+      const [agentFilter, setAgentFilter] = useState("");
+      const [natureFilter, setNatureFilter] = useState("");
+      const [view, setView] = useState("list");
+
+      const filtered = useMemo(() => {
+        return WIN.LEADS.filter((l) => {
+          if (q) {
+            const s = `${l.firstName} ${l.lastName} ${l.email} ${l.phone} ${l.id}`.toLowerCase();
+            if (!s.includes(q.toLowerCase())) return false;
+          }
+          if (stageFilter && l.stageId !== Number(stageFilter)) return false;
+          if (agentFilter && l.agent.id !== agentFilter) return false;
+          if (natureFilter && l.nature !== natureFilter) return false;
+          return true;
+        });
+      }, [q, stageFilter, agentFilter, natureFilter]);
+
+      const visible = filtered.slice(0, 20);
+
+      return (
+        <>
+          <Sidebar active="LEADS" />
+          <main className="main">
+            <Topbar
+              title="Leads"
+              crumbs={`${filtered.length} contacts dans votre base`}
+              actions={<>
+                <div style={{ display: "flex", border: "1px solid var(--border-strong)", borderRadius: 8, overflow: "hidden" }}>
+                  <button className={`btn btn-sm ${view === "list" ? "btn-primary" : "btn-ghost"}`} style={{ borderRadius: 0, border: "none" }} onClick={() => setView("list")}><Icon name="list" size={14} /> Liste</button>
+                  <button className={`btn btn-sm ${view === "grid" ? "btn-primary" : "btn-ghost"}`} style={{ borderRadius: 0, border: "none" }} onClick={() => setView("grid")}><Icon name="grid" size={14} /> Cartes</button>
+                </div>
+                <button className="btn btn-sm"><Icon name="download" size={14} /> Exporter</button>
+                <button className="btn btn-primary btn-sm"><Icon name="plus" size={14} /> Nouveau lead</button>
+              </>}
+            />
+            <div className="content">
+              <div className="card">
+                <div className="filter-bar">
+                  <input className="input input-search" placeholder="Rechercher par nom, email, téléphone..." style={{ flex: 1, minWidth: 240 }} value={q} onChange={(e) => setQ(e.target.value)} />
+                  <select className="input" style={{ width: 160, height: 36 }} value={stageFilter} onChange={(e) => setStageFilter(e.target.value)}>
+                    <option value="">Toutes les étapes</option>
+                    {WIN.STAGES.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
+                  </select>
+                  <select className="input" style={{ width: 160, height: 36 }} value={agentFilter} onChange={(e) => setAgentFilter(e.target.value)}>
+                    <option value="">Tous commerciaux</option>
+                    {WIN.AGENTS.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
+                  </select>
+                  <select className="input" style={{ width: 140, height: 36 }} value={natureFilter} onChange={(e) => setNatureFilter(e.target.value)}>
+                    <option value="">Toutes natures</option>
+                    <option>Achat</option><option>Location</option><option>Investissement</option>
+                  </select>
+                  <button className="btn btn-sm btn-ghost" onClick={() => { setQ(""); setStageFilter(""); setAgentFilter(""); setNatureFilter(""); }}>Réinitialiser</button>
+                </div>
+
+                {view === "list" ? (
+                  <div style={{ overflow: "auto" }}>
+                    <table className="table">
+                      <thead>
+                        <tr>
+                          <th style={{ width: 32 }}><input type="checkbox" /></th>
+                          <th>Contact</th>
+                          <th>Étape</th>
+                          <th>Projet</th>
+                          <th>Budget</th>
+                          <th>Commercial</th>
+                          <th>Prochaine action</th>
+                          <th>Saisi le</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {visible.map((l) => (
+                          <tr key={l.id} onClick={() => location.href = `lead.html?id=${l.id}`}>
+                            <td onClick={(e) => e.stopPropagation()}><input type="checkbox" /></td>
+                            <td>
+                              <div className="row gap-3" style={{ alignItems: "center" }}>
+                                <Avatar id={l.firstName[0] + l.lastName[0]} color={l.agent.color} />
+                                <div>
+                                  <div className="bold">{l.firstName} {l.lastName}</div>
+                                  <div className="muted" style={{ fontSize: 12 }}>{l.email}</div>
+                                </div>
+                              </div>
+                            </td>
+                            <td><Stage stage={l.stage} /></td>
+                            <td>
+                              <div style={{ fontSize: 13 }}>{l.type} · {l.nature}</div>
+                              <div className="muted" style={{ fontSize: 12 }}>{l.city}</div>
+                            </td>
+                            <td className="num bold">{WIN.fmt.moneyShort(l.budgetMin)}–{WIN.fmt.moneyShort(l.budgetMax)}</td>
+                            <td>
+                              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                                <Avatar id={l.agent.id} color={l.agent.color} size="avatar-sm" />
+                                <span style={{ fontSize: 13 }}>{l.agent.name.split(" ")[0]}</span>
+                              </div>
+                            </td>
+                            <td>
+                              <div style={{ fontSize: 13 }}>{l.nextActionType}</div>
+                              <div className="muted" style={{ fontSize: 12 }}>{WIN.fmt.rel(l.nextAction)}</div>
+                            </td>
+                            <td className="muted" style={{ fontSize: 12 }}>{WIN.fmt.date(l.createdAt)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 12, padding: 18 }}>
+                    {visible.map((l) => (
+                      <div key={l.id} className="card" style={{ cursor: "pointer" }} onClick={() => location.href = `lead.html?id=${l.id}`}>
+                        <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
+                          <div className="row between">
+                            <Avatar id={l.firstName[0] + l.lastName[0]} color={l.agent.color} size="avatar-lg" />
+                            <Stage stage={l.stage} />
+                          </div>
+                          <div>
+                            <div className="bold" style={{ fontSize: 15 }}>{l.firstName} {l.lastName}</div>
+                            <div className="muted" style={{ fontSize: 13 }}>{l.type} · {l.city}</div>
+                          </div>
+                          <div className="row between" style={{ borderTop: "1px solid var(--border)", paddingTop: 12 }}>
+                            <div>
+                              <div className="muted" style={{ fontSize: 11 }}>Budget</div>
+                              <div className="bold tnum" style={{ fontSize: 13 }}>{WIN.fmt.moneyShort(l.budgetMax)}</div>
+                            </div>
+                            <div style={{ textAlign: "right" }}>
+                              <div className="muted" style={{ fontSize: 11 }}>Action</div>
+                              <div className="bold" style={{ fontSize: 13 }}>{WIN.fmt.rel(l.nextAction)}</div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <div className="pagination">
+                  <span>Affichage <span className="bold">1–{Math.min(20, filtered.length)}</span> sur <span className="bold">{filtered.length}</span> leads</span>
+                  <div className="page-btns">
+                    <button>‹</button>
+                    <button className="active">1</button>
+                    <button>2</button>
+                    <button>3</button>
+                    <button>4</button>
+                    <button>›</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </main>
+        </>
+      );
+    }
+    ReactDOM.createRoot(document.getElementById("app")).render(<App />);
+  </script>
+</body>
+</html>

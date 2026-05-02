@@ -17,78 +17,102 @@ export default function LoginPage() {
   );
 
   return (
-    <div className="w-full max-w-md">
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 px-8 py-10">
-        <div className="mb-8 text-center">
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-            WIN CRM
-          </h1>
-          <p className="mt-1 text-sm text-slate-500">
-            Connectez-vous à votre espace
-          </p>
+    <div className="auth">
+      <div className="auth-stage">
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ width: 36, height: 36, background: "rgba(255,255,255,0.18)", borderRadius: 8, display: "grid", placeItems: "center", fontWeight: 700, fontSize: 16 }}>
+            W
+          </div>
+          <div style={{ fontWeight: 700, fontSize: 17, letterSpacing: "-0.01em" }}>WIN CRM</div>
         </div>
 
-        <form action={formAction} className="space-y-5">
-          {state?.error && (
-            <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
-              {state.error}
+        <div>
+          <h2 style={{ fontSize: 38, fontWeight: 700, lineHeight: 1.15, letterSpacing: "-0.02em", margin: "0 0 16px", maxWidth: 480 }}>
+            Pilotez votre activité immobilière en un coup d&apos;œil.
+          </h2>
+          <p style={{ fontSize: 15, lineHeight: 1.6, opacity: 0.9, maxWidth: 440, margin: 0 }}>
+            Centralisez vos contacts, suivez vos leads et concluez plus de ventes. La plateforme conçue pour les agents immobiliers.
+          </p>
+          <div style={{ display: "flex", gap: 32, marginTop: 36 }}>
+            <div>
+              <div style={{ fontSize: 30, fontWeight: 700, letterSpacing: "-0.02em" }}>482</div>
+              <div style={{ fontSize: 13, opacity: 0.85 }}>Leads gérés</div>
             </div>
-          )}
-
-          <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-slate-700 mb-1.5"
-            >
-              Adresse email
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              autoComplete="email"
-              required
-              className="w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-900/10"
-              placeholder="vous@exemple.com"
-            />
+            <div>
+              <div style={{ fontSize: 30, fontWeight: 700, letterSpacing: "-0.02em" }}>18,4 %</div>
+              <div style={{ fontSize: 13, opacity: 0.85 }}>Taux de conversion</div>
+            </div>
+            <div>
+              <div style={{ fontSize: 30, fontWeight: 700, letterSpacing: "-0.02em" }}>5</div>
+              <div style={{ fontSize: 13, opacity: 0.85 }}>Commerciaux actifs</div>
+            </div>
           </div>
+        </div>
 
-          <div>
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-slate-700 mb-1.5"
+        <div style={{ fontSize: 12, opacity: 0.75 }}>© 2024 WIN CRM · Application interne</div>
+      </div>
+
+      <div className="auth-form">
+        <div style={{ maxWidth: 380, width: "100%", margin: "auto 0" }}>
+          <h2 style={{ fontSize: 24, fontWeight: 700, margin: "0 0 8px", letterSpacing: "-0.02em" }}>
+            Connexion
+          </h2>
+          <p style={{ color: "var(--text-soft)", margin: "0 0 28px", fontSize: 14 }}>
+            Accédez à votre espace de travail.
+          </p>
+
+          <form action={formAction} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            {state?.error && (
+              <div className="badge neg" style={{ padding: "10px 14px", borderRadius: "var(--r)", fontSize: 13, lineHeight: 1.5 }}>
+                {state.error}
+              </div>
+            )}
+
+            <div className="field">
+              <label className="field-label" htmlFor="email">Email</label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                autoComplete="email"
+                required
+                className="input"
+                placeholder="vous@wincrm.fr"
+              />
+            </div>
+
+            <div className="field">
+              <label className="field-label" style={{ display: "flex", justifyContent: "space-between" }} htmlFor="password">
+                <span>Mot de passe</span>
+                <span style={{ color: "var(--accent)", fontWeight: 500, fontSize: 12 }}>Oublié ?</span>
+              </label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                autoComplete="current-password"
+                required
+                className="input"
+                placeholder="••••••••"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={pending}
+              className="btn btn-primary btn-lg btn-full"
             >
-              Mot de passe
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              autoComplete="current-password"
-              required
-              className="w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-900/10"
-              placeholder="••••••••"
-            />
+              {pending ? "Connexion…" : "Se connecter"}
+            </button>
+          </form>
+
+          <div style={{ textAlign: "center", padding: "24px 0", color: "var(--text-soft)", fontSize: 13 }}>
+            Pas de compte ?{" "}
+            <Link href="/register" style={{ color: "var(--accent)", fontWeight: 500, textDecoration: "none", marginLeft: 4 }}>
+              Créer un compte
+            </Link>
           </div>
-
-          <button
-            type="submit"
-            disabled={pending}
-            className="w-full rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700 disabled:opacity-60 disabled:cursor-not-allowed"
-          >
-            {pending ? "Connexion…" : "Se connecter"}
-          </button>
-        </form>
-
-        <p className="mt-6 text-center text-sm text-slate-500">
-          Pas encore de compte ?{" "}
-          <Link
-            href="/register"
-            className="font-medium text-slate-900 underline-offset-4 hover:underline"
-          >
-            Demander un accès
-          </Link>
-        </p>
+        </div>
       </div>
     </div>
   );

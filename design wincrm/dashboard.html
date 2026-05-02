@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>WIN CRM — Tableau de bord</title>
+<link rel="stylesheet" href="styles/system.css" />
+</head>
+<body>
+  <div class="app" id="app"></div>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+  <script src="js/data.js"></script>
+  <script type="text/babel" src="js/chrome.jsx"></script>
+
+  <script type="text/babel">
+    const { useState, useMemo } = React;
+
+    function StatCard({ label, value, delta, deltaTone, icon, iconColor }) {
+      return (
+        <div className="stat">
+          <div className="row between">
+            <span className="label">{label}</span>
+            {icon && (
+              <span style={{
+                width: 32, height: 32, borderRadius: 8,
+                background: `color-mix(in oklab, ${iconColor} 12%, transparent)`,
+                color: iconColor,
+                display: "grid", placeItems: "center"
+              }}>
+                <Icon name={icon} size={16} />
+              </span>
+            )}
+          </div>
+          <div className="value">{value}</div>
+          {delta && <div className={`delta ${deltaTone || "neutral"}`}>{delta}</div>}
+        </div>
+      );
+    }
+
+    function LineChart() {
+      const data = [12, 18, 14, 22, 28, 24, 31, 27, 34, 32, 38, 42];
+      const labels = ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
+      const w = 800, h = 220;
+      const pad = { l: 36, r: 16, t: 12, b: 28 };
+      const max = Math.max(...data) * 1.15;
+      const px = (i) => pad.l + (i / (data.length - 1)) * (w - pad.l - pad.r);
+      const py = (v) => pad.t + (1 - v / max) * (h - pad.t - pad.b);
+      const path = data.map((v, i) => `${i ? "L" : "M"} ${px(i)} ${py(v)}`).join(" ");
+      const area = `${path} L ${px(data.length - 1)} ${h - pad.b} L ${pad.l} ${h - pad.b} Z`;
+      const ticks = [0, max / 2, max];
+      return (
+        <svg viewBox={`0 0 ${w} ${h}`} style={{ width: "100%", height: 260 }}>
+          <defs>
+            <linearGradient id="g1" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.18" />
+              <stop offset="100%" stopColor="var(--accent)" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+          {ticks.map((t, i) => (
+            <g key={i}>
+              <line x1={pad.l} x2={w - pad.r} y1={py(t)} y2={py(t)} stroke="var(--border)" strokeDasharray="3 3" />
+              <text x={pad.l - 8} y={py(t) + 4} fill="var(--text-faint)" fontSize="11" textAnchor="end">{Math.round(t)}</text>
+            </g>
+          ))}
+          <path d={area} fill="url(#g1)" />
+          <path d={path} stroke="var(--accent)" strokeWidth="2.5" fill="none" />
+          {data.map((v, i) => <circle key={i} cx={px(i)} cy={py(v)} r="3.5" fill="var(--surface)" stroke="var(--accent)" strokeWidth="2" />)}
+          {labels.map((l, i) => <text key={i} x={px(i)} y={h - 8} fill="var(--text-faint)" fontSize="11" textAnchor="middle">{l}</text>)}
+        </svg>
+      );
+    }
+
+    function StageDistribution() {
+      const items = WIN.STAGES.map((s) => ({ ...s, n: WIN.LEADS.filter((l) => l.stageId === s.id).length }));
+      const max = Math.max(...items.map((i) => i.n));
+      return (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {items.map((s) => (
+            <div key={s.id} style={{ display: "grid", gridTemplateColumns: "150px 1fr 50px", gap: 12, alignItems: "center", fontSize: 13 }}>
+              <span style={{ display: "flex", gap: 8, alignItems: "center", color: "var(--text-muted)" }}>
+                <span style={{ width: 8, height: 8, borderRadius: 999, background: s.color }}></span>
+                {s.label}
+              </span>
+              <div className="bar"><i style={{ width: `${(s.n / max) * 100}%`, background: s.color }}></i></div>
+              <span className="tnum bold" style={{ textAlign: "right" }}>{s.n}</span>
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    function UpcomingTable() {
+      const today = new Date(); today.setHours(0,0,0,0);
+      const items = [...WIN.LEADS]
+        .filter((l) => l.nextAction)
+        .sort((a, b) => +a.nextAction - +b.nextAction)
+        .slice(0, 6);
+      return (
+        <table className="table">
+          <thead><tr><th>Lead</th><th>Action</th><th>Quand</th><th>Commercial</th></tr></thead>
+          <tbody>
+            {items.map((l) => {
+              const diff = (+new Date(l.nextAction) - +today) / 86400000;
+              const tone = diff < 0 ? "neg" : diff < 1 ? "warn" : "";
+              return (
+                <tr key={l.id} onClick={() => location.href = `lead.html?id=${l.id}`}>
+                  <td>
+                    <div className="bold">{l.firstName} {l.lastName}</div>
+                    <div className="muted" style={{ fontSize: 12 }}>{l.type} · {l.city}</div>
+                  </td>
+                  <td><Badge tone="info">{l.nextActionType}</Badge></td>
+                  <td><Badge tone={tone}>{WIN.fmt.rel(l.nextAction)}</Badge></td>
+                  <td><div style={{ display: "flex", gap: 8, alignItems: "center" }}><Avatar id={l.agent.id} color={l.agent.color} size="avatar-sm" /><span style={{ fontSize: 13 }}>{l.agent.name.split(" ")[0]}</span></div></td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      );
+    }
+
+    function App() {
+      const total = WIN.LEADS.length;
+      const newThisMonth = WIN.LEADS.filter((l) => (Date.now() - +l.createdAt) < 30 * 86400000).length;
+      const today = new Date(); today.setHours(0,0,0,0);
+      const dueToday = WIN.LEADS.filter((l) => l.nextAction && Math.abs(+l.nextAction - +today) < 86400000).length;
+      const overdue = WIN.LEADS.filter((l) => l.nextAction && +l.nextAction < +today).length;
+      const won = WIN.LEADS.filter((l) => l.stageId === 9).length;
+      const conv = ((won / total) * 100).toFixed(1) + " %";
+
+      return (
+        <>
+          <Sidebar active="DASHBOARD" />
+          <main className="main">
+            <Topbar
+              title="Tableau de bord"
+              crumbs="Vue d'ensemble de l'activité"
+              actions={<>
+                <select className="input btn-sm" style={{ width: 130, height: 36 }}>
+                  <option>30 derniers jours</option>
+                  <option>7 derniers jours</option>
+                  <option>Cette année</option>
+                </select>
+                <button className="btn btn-sm"><Icon name="download" size={14} /> Exporter</button>
+                <button className="btn btn-primary btn-sm" onClick={() => location.href = "lead.html?id=L-10482"}><Icon name="plus" size={14} /> Nouveau lead</button>
+              </>}
+            />
+            <div className="content">
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 16 }}>
+                <StatCard label="Total leads" value={total} delta="↑ +12 ce mois" deltaTone="pos" icon="users" iconColor="#3b82f6" />
+                <StatCard label="Nouveaux ce mois" value={newThisMonth} delta={`↑ +${newThisMonth} acquisitions`} deltaTone="pos" icon="plus" iconColor="#10b981" />
+                <StatCard label="Relances aujourd'hui" value={dueToday} delta={`${overdue} en retard`} deltaTone={overdue > 0 ? "neg" : "neutral"} icon="bell" iconColor="#f59e0b" />
+                <StatCard label="Taux de conversion" value={conv} delta="↑ +0,7 pt vs M-1" deltaTone="pos" icon="chart" iconColor="#8b5cf6" />
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: 16, marginBottom: 16 }}>
+                <div className="card">
+                  <div className="card-h">
+                    <div>
+                      <h3>Acquisition de leads</h3>
+                      <div className="meta">12 derniers mois</div>
+                    </div>
+                    <Badge tone="pos" dot>+18,4%</Badge>
+                  </div>
+                  <div className="card-b"><LineChart /></div>
+                </div>
+                <div className="card">
+                  <div className="card-h">
+                    <h3>Pipeline par étape</h3>
+                    <span className="meta">{total} leads</span>
+                  </div>
+                  <div className="card-b"><StageDistribution /></div>
+                </div>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: 16 }}>
+                <div className="card">
+                  <div className="card-h">
+                    <h3>Prochaines actions</h3>
+                    <a href="leads.html" className="meta" style={{ color: "var(--accent)", textDecoration: "none", fontWeight: 500 }}>Voir tout →</a>
+                  </div>
+                  <div className="card-b flush"><UpcomingTable /></div>
+                </div>
+                <div className="card">
+                  <div className="card-h">
+                    <h3>Performance commerciaux</h3>
+                    <span className="meta">Ce mois</span>
+                  </div>
+                  <div className="card-b">
+                    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                      {WIN.AGENTS.map((a) => {
+                        const owned = WIN.LEADS.filter((l) => l.agent.id === a.id);
+                        const w = owned.filter((l) => l.stageId === 9).length;
+                        const rate = owned.length ? Math.round((w / owned.length) * 100) : 0;
+                        return (
+                          <div key={a.id} style={{ display: "grid", gridTemplateColumns: "auto 1fr auto", gap: 12, alignItems: "center" }}>
+                            <Avatar id={a.id} name={a.name} color={a.color} />
+                            <div style={{ minWidth: 0 }}>
+                              <div className="bold" style={{ fontSize: 13 }}>{a.name}</div>
+                              <div className="muted" style={{ fontSize: 12 }}>{owned.length} leads · {w} conclus</div>
+                            </div>
+                            <div style={{ textAlign: "right" }}>
+                              <div className="bold tnum">{rate}%</div>
+                              <div className="muted" style={{ fontSize: 11 }}>conv.</div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </main>
+        </>
+      );
+    }
+    ReactDOM.createRoot(document.getElementById("app")).render(<App />);
+  </script>
+</body>
+</html>

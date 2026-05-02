@@ -15,17 +15,16 @@ import DeleteButton from "../components/DeleteButton";
 import CommentSection from "../components/CommentSection";
 import VisitSection from "../components/VisitSection";
 import ActionSection from "../components/ActionSection";
+import Topbar from "../../components/Topbar";
 import type { ReactNode } from "react";
 
 function InfoRow({ label, value }: { label: string; value: ReactNode }) {
   return (
-    <div>
-      <dt className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-0.5">
-        {label}
-      </dt>
-      <dd className="text-sm text-slate-900">
-        {value ?? <span className="text-slate-400 italic">—</span>}
-      </dd>
+    <div className="info-row">
+      <span className="lbl">{label}</span>
+      <span className="val">
+        {value ?? <span style={{ color: "var(--text-faint)", fontStyle: "italic" }}>—</span>}
+      </span>
     </div>
   );
 }
@@ -50,196 +49,217 @@ export default async function LeadDetailPage({
     isAdmin ||
     lead.titulaireId === session?.userId;
 
+  const initials = `${lead.prenom[0] ?? ""}${lead.nom[0] ?? ""}`.toUpperCase();
+
   return (
-    <div>
-      <div className="flex items-center gap-3 mb-6">
-        <Link
-          href="/leads"
-          className="text-sm text-slate-500 hover:text-slate-700 transition-colors"
-        >
-          ← Leads
-        </Link>
-        <span className="text-slate-300">/</span>
-        <h1 className="text-2xl font-bold text-slate-900">
-          {lead.prenom} {lead.nom}
-        </h1>
-      </div>
-
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <span className={etatBadgeClass(lead.etat)}>{ETAT_LABELS[lead.etat]}</span>
-          <span className={etapeBadgeClass(lead.etape)}>{ETAPE_LABELS[lead.etape]}</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <a
-            href={`/api/export/leads/${lead.id}`}
-            className="inline-flex items-center px-4 py-2 text-sm font-semibold text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
-          >
-            Exporter PDF
-          </a>
-          {canEdit && (
-            <Link
-              href={`/leads/${lead.id}/modifier`}
-              className="inline-flex items-center px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              Modifier
+    <>
+      <Topbar
+        title={`${lead.prenom} ${lead.nom}`}
+        crumbs={
+          <>
+            <Link href="/leads" style={{ color: "var(--text-soft)", textDecoration: "none" }}>
+              Leads
             </Link>
-          )}
-          {isAdmin && <DeleteButton id={lead.id} />}
+            {" "}/{" "}
+            <span>{lead.prenom} {lead.nom}</span>
+          </>
+        }
+        actions={
+          <>
+            <a href={`/api/export/leads/${lead.id}`} className="btn btn-sm">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/>
+              </svg>
+              Export PDF
+            </a>
+            {canEdit && (
+              <Link href={`/leads/${lead.id}/modifier`} className="btn btn-sm">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+                Modifier
+              </Link>
+            )}
+            {isAdmin && <DeleteButton id={lead.id} />}
+          </>
+        }
+      />
+
+      <div className="content">
+        {/* Header du lead */}
+        <div className="card" style={{ marginBottom: 16 }}>
+          <div style={{ padding: "20px 24px", display: "flex", gap: 20, alignItems: "center" }}>
+            <span className="avatar avatar-lg" style={{ background: "var(--accent)" }}>{initials}</span>
+            <div style={{ flex: 1 }}>
+              <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 6 }}>
+                <h2 style={{ margin: 0, fontSize: 22, fontWeight: 700, letterSpacing: "-0.02em" }}>
+                  {lead.genre === "M" ? "M." : lead.genre === "Mme" ? "Mme" : ""} {lead.prenom} {lead.nom}
+                </h2>
+                <span className={etatBadgeClass(lead.etat)}><span className="dot" />{ETAT_LABELS[lead.etat]}</span>
+                <span className={etapeBadgeClass(lead.etape)}>{ETAPE_LABELS[lead.etape]}</span>
+              </div>
+              <div style={{ display: "flex", gap: 16, fontSize: 13, color: "var(--text-soft)" }}>
+                {lead.telephone && <span>📞 {lead.telephone}</span>}
+                {lead.email && <span>✉ {lead.email}</span>}
+                {lead.adresse && <span>📍 {lead.adresse}</span>}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Corps */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: 16 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+
+            {/* Identité */}
+            <div className="card">
+              <div className="card-h"><h3>Identité</h3></div>
+              <div className="card-b" style={{ padding: "0 18px" }}>
+                <div className="info-row">
+                  <span className="lbl">Genre</span>
+                  <span className="val">{lead.genre === "M" ? "M." : lead.genre === "Mme" ? "Mme" : "Autre"}</span>
+                </div>
+                <div className="info-row">
+                  <span className="lbl">Prénom</span>
+                  <span className="val">{lead.prenom}</span>
+                </div>
+                <div className="info-row">
+                  <span className="lbl">Nom</span>
+                  <span className="val">{lead.nom}</span>
+                </div>
+                {lead.age !== null && (
+                  <div className="info-row">
+                    <span className="lbl">Âge</span>
+                    <span className="val">{lead.age} ans</span>
+                  </div>
+                )}
+                {lead.situationMaritale && (
+                  <div className="info-row">
+                    <span className="lbl">Situation</span>
+                    <span className="val">{SITUATION_LABELS[lead.situationMaritale]}</span>
+                  </div>
+                )}
+                {lead.heritier !== null && (
+                  <div className="info-row">
+                    <span className="lbl">Héritier</span>
+                    <span className="val">{lead.heritier ? "Oui" : "Non"}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Projet immobilier */}
+            <div className="card">
+              <div className="card-h"><h3>Projet immobilier</h3></div>
+              <div className="card-b" style={{ padding: "0 18px" }}>
+                {lead.natureRecherche && (
+                  <div className="info-row">
+                    <span className="lbl">Nature</span>
+                    <span className="val"><span className="badge info">{NATURE_LABELS[lead.natureRecherche]}</span></span>
+                  </div>
+                )}
+                {lead.typeLogement && (
+                  <div className="info-row">
+                    <span className="lbl">Type</span>
+                    <span className="val">{TYPE_LABELS[lead.typeLogement]}</span>
+                  </div>
+                )}
+                {(lead.budgetMin !== null || lead.budgetMax !== null) && (
+                  <div className="info-row">
+                    <span className="lbl">Budget</span>
+                    <span className="val tnum">
+                      {lead.budgetMin !== null ? lead.budgetMin.toLocaleString("fr-FR") + " €" : "—"}
+                      {" → "}
+                      {lead.budgetMax !== null ? lead.budgetMax.toLocaleString("fr-FR") + " €" : "—"}
+                    </span>
+                  </div>
+                )}
+                {lead.criteresSpecifiques && (
+                  <div className="info-row">
+                    <span className="lbl">Critères</span>
+                    <span className="val" style={{ whiteSpace: "pre-wrap" }}>{lead.criteresSpecifiques}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <ActionSection leadId={lead.id} actions={lead.actions} />
+            <VisitSection leadId={lead.id} visits={lead.visits} canDelete={canDeleteVisit} />
+            <CommentSection
+              leadId={lead.id}
+              comments={lead.comments}
+              sessionUserId={session?.userId ?? ""}
+              sessionRole={session?.role ?? ""}
+            />
+          </div>
+
+          {/* Sidebar droite */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            {/* Contact */}
+            <div className="card">
+              <div className="card-h"><h3>Coordonnées</h3></div>
+              <div className="card-b" style={{ padding: "0 18px" }}>
+                {lead.email && (
+                  <div className="info-row">
+                    <span className="lbl">Email</span>
+                    <span className="val">
+                      <a href={`mailto:${lead.email}`} style={{ color: "var(--accent)", textDecoration: "none" }}>{lead.email}</a>
+                    </span>
+                  </div>
+                )}
+                {lead.telephone && (
+                  <div className="info-row">
+                    <span className="lbl">Téléphone</span>
+                    <span className="val">
+                      <a href={`tel:${lead.telephone}`} style={{ color: "var(--accent)", textDecoration: "none" }}>{lead.telephone}</a>
+                    </span>
+                  </div>
+                )}
+                {lead.adresse && (
+                  <div className="info-row">
+                    <span className="lbl">Adresse</span>
+                    <span className="val">{lead.adresse}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Suivi commercial */}
+            <div className="card">
+              <div className="card-h"><h3>Suivi commercial</h3></div>
+              <div className="card-b" style={{ padding: "0 18px" }}>
+                <div className="info-row">
+                  <span className="lbl">Commercial</span>
+                  <span className="val">
+                    {lead.titulaire ? (
+                      <span style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                        <span className="avatar avatar-sm" style={{ background: "var(--accent)" }}>
+                          {`${lead.titulaire.prenom[0] ?? ""}${lead.titulaire.nom[0] ?? ""}`.toUpperCase()}
+                        </span>
+                        {lead.titulaire.prenom} {lead.titulaire.nom}
+                      </span>
+                    ) : (
+                      <span style={{ color: "var(--text-faint)", fontStyle: "italic" }}>Non assigné</span>
+                    )}
+                  </span>
+                </div>
+                <div className="info-row">
+                  <span className="lbl">Saisi le</span>
+                  <span className="val">
+                    {new Date(lead.dateSaisie).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}
+                  </span>
+                </div>
+                <div className="info-row">
+                  <span className="lbl">Modifié le</span>
+                  <span className="val">
+                    {new Date(lead.updatedAt).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <section className="lg:col-span-2 space-y-6">
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
-            <h2 className="text-base font-semibold text-slate-900 mb-5">Identité</h2>
-            <dl className="grid grid-cols-2 sm:grid-cols-3 gap-5">
-              <InfoRow
-                label="Genre"
-                value={lead.genre === "M" ? "M." : lead.genre === "Mme" ? "Mme" : "Autre"}
-              />
-              <InfoRow label="Prénom" value={lead.prenom} />
-              <InfoRow label="Nom" value={lead.nom} />
-              <InfoRow label="Âge" value={lead.age !== null ? `${lead.age} ans` : null} />
-              <InfoRow
-                label="Situation maritale"
-                value={
-                  lead.situationMaritale
-                    ? SITUATION_LABELS[lead.situationMaritale]
-                    : null
-                }
-              />
-              <InfoRow
-                label="Héritier"
-                value={
-                  lead.heritier === true
-                    ? "Oui"
-                    : lead.heritier === false
-                    ? "Non"
-                    : null
-                }
-              />
-            </dl>
-          </div>
-
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
-            <h2 className="text-base font-semibold text-slate-900 mb-5">Contact</h2>
-            <dl className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-              <InfoRow
-                label="Email"
-                value={
-                  lead.email ? (
-                    <a href={`mailto:${lead.email}`} className="text-blue-600 hover:underline">
-                      {lead.email}
-                    </a>
-                  ) : null
-                }
-              />
-              <InfoRow
-                label="Téléphone"
-                value={
-                  lead.telephone ? (
-                    <a href={`tel:${lead.telephone}`} className="text-blue-600 hover:underline">
-                      {lead.telephone}
-                    </a>
-                  ) : null
-                }
-              />
-              <InfoRow label="Adresse" value={lead.adresse} />
-            </dl>
-          </div>
-
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
-            <h2 className="text-base font-semibold text-slate-900 mb-5">Projet immobilier</h2>
-            <dl className="grid grid-cols-2 sm:grid-cols-3 gap-5">
-              <InfoRow
-                label="Nature recherche"
-                value={
-                  lead.natureRecherche
-                    ? NATURE_LABELS[lead.natureRecherche]
-                    : null
-                }
-              />
-              <InfoRow
-                label="Type logement"
-                value={
-                  lead.typeLogement
-                    ? TYPE_LABELS[lead.typeLogement]
-                    : null
-                }
-              />
-              <InfoRow
-                label="Budget"
-                value={
-                  lead.budgetMin !== null || lead.budgetMax !== null
-                    ? `${lead.budgetMin !== null ? lead.budgetMin.toLocaleString("fr-FR") + " €" : "—"} → ${lead.budgetMax !== null ? lead.budgetMax.toLocaleString("fr-FR") + " €" : "—"}`
-                    : null
-                }
-              />
-              {lead.criteresSpecifiques && (
-                <div className="col-span-2 sm:col-span-3">
-                  <InfoRow
-                    label="Critères spécifiques"
-                    value={<p className="whitespace-pre-wrap">{lead.criteresSpecifiques}</p>}
-                  />
-                </div>
-              )}
-            </dl>
-          </div>
-
-          <ActionSection
-            leadId={lead.id}
-            actions={lead.actions}
-          />
-
-          <VisitSection
-            leadId={lead.id}
-            visits={lead.visits}
-            canDelete={canDeleteVisit}
-          />
-
-          <CommentSection
-            leadId={lead.id}
-            comments={lead.comments}
-            sessionUserId={session?.userId ?? ""}
-            sessionRole={session?.role ?? ""}
-          />
-        </section>
-
-        <aside className="space-y-6">
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
-            <h2 className="text-base font-semibold text-slate-900 mb-5">Suivi</h2>
-            <dl className="space-y-4">
-              <InfoRow
-                label="Commercial assigné"
-                value={
-                  lead.titulaire ? (
-                    `${lead.titulaire.prenom} ${lead.titulaire.nom}`
-                  ) : (
-                    <span className="text-slate-400 italic">Non assigné</span>
-                  )
-                }
-              />
-              <InfoRow
-                label="Date de saisie"
-                value={new Date(lead.dateSaisie).toLocaleDateString("fr-FR", {
-                  day: "numeric",
-                  month: "long",
-                  year: "numeric",
-                })}
-              />
-              <InfoRow
-                label="Dernière modification"
-                value={new Date(lead.updatedAt).toLocaleDateString("fr-FR", {
-                  day: "numeric",
-                  month: "long",
-                  year: "numeric",
-                })}
-              />
-            </dl>
-          </div>
-        </aside>
-      </div>
-    </div>
+    </>
   );
 }

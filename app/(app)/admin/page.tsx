@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getSession } from "@/app/lib/session";
 import { updateUserStatut, updateUserRole } from "@/app/actions/admin";
 import { Role, UserStatut } from "@prisma/client";
+import Topbar from "../components/Topbar";
 
 export default async function AdminPage() {
   const session = await getSession();
@@ -26,122 +27,84 @@ export default async function AdminPage() {
   const autres = users.filter((u) => u.statut !== "en_attente");
 
   return (
-    <div>
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-slate-900">Administration</h1>
-        <p className="mt-1 text-sm text-slate-500">
-          Gestion des utilisateurs et des accès
-        </p>
-      </div>
+    <>
+      <Topbar
+        title="Administration"
+        crumbs="Gestion des utilisateurs et des accès"
+      />
 
-      {/* Section 1 — En attente de validation */}
-      <section className="mb-10">
-        <div className="flex items-center gap-3 mb-4">
-          <h2 className="text-base font-semibold text-slate-900">
-            En attente de validation
-          </h2>
-          {enAttente.length > 0 && (
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800">
-              {enAttente.length}
-            </span>
+      <div className="content">
+        {/* En attente */}
+        <div style={{ marginBottom: 24 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+            <h2 style={{ margin: 0, fontSize: 14, fontWeight: 600 }}>En attente de validation</h2>
+            {enAttente.length > 0 && <span className="badge warn">{enAttente.length}</span>}
+          </div>
+
+          {enAttente.length === 0 ? (
+            <div className="empty card">
+              <p style={{ margin: 0, fontStyle: "italic" }}>Aucune inscription en attente</p>
+            </div>
+          ) : (
+            <div className="card">
+              <div style={{ overflowX: "auto" }}>
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>Nom</th>
+                      <th>Prénom</th>
+                      <th>Email</th>
+                      <th>Inscription</th>
+                      <th style={{ textAlign: "right" }}>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {enAttente.map((user) => (
+                      <EnAttenteRow key={user.id} user={user} />
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           )}
         </div>
 
-        {enAttente.length === 0 ? (
-          <div className="bg-white rounded-xl border border-slate-200 px-6 py-8 text-center">
-            <p className="text-sm text-slate-400 italic">
-              Aucune inscription en attente
-            </p>
-          </div>
-        ) : (
-          <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-slate-100 bg-slate-50">
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                      Nom
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                      Prénom
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                      Email
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                      Inscription
-                    </th>
-                    <th className="px-4 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {enAttente.map((user) => (
-                    <EnAttenteRow key={user.id} user={user} />
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-      </section>
+        {/* Tous les utilisateurs */}
+        <div>
+          <h2 style={{ margin: "0 0 14px", fontSize: 14, fontWeight: 600 }}>Tous les utilisateurs</h2>
 
-      {/* Section 2 — Tous les utilisateurs */}
-      <section>
-        <h2 className="text-base font-semibold text-slate-900 mb-4">
-          Tous les utilisateurs
-        </h2>
-
-        {autres.length === 0 ? (
-          <div className="bg-white rounded-xl border border-slate-200 px-6 py-8 text-center">
-            <p className="text-sm text-slate-400 italic">Aucun utilisateur</p>
-          </div>
-        ) : (
-          <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-slate-100 bg-slate-50">
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                      Nom
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                      Prénom
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                      Email
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                      Rôle
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                      Statut
-                    </th>
-                    <th className="px-4 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {autres.map((user) => (
-                    <UserRow
-                      key={user.id}
-                      user={user}
-                      isSelf={user.id === session.userId}
-                    />
-                  ))}
-                </tbody>
-              </table>
+          {autres.length === 0 ? (
+            <div className="empty card">
+              <p style={{ margin: 0, fontStyle: "italic" }}>Aucun utilisateur</p>
             </div>
-          </div>
-        )}
-      </section>
-    </div>
+          ) : (
+            <div className="card">
+              <div style={{ overflowX: "auto" }}>
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>Nom</th>
+                      <th>Prénom</th>
+                      <th>Email</th>
+                      <th>Rôle</th>
+                      <th>Statut</th>
+                      <th style={{ textAlign: "right" }}>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {autres.map((user) => (
+                      <UserRow key={user.id} user={user} isSelf={user.id === session.userId} />
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </>
   );
 }
-
-// ─── Sous-composants Server ────────────────────────────────────────────────────
 
 type UserRecord = {
   id: string;
@@ -164,30 +127,18 @@ async function EnAttenteRow({ user }: { user: UserRecord }) {
   }
 
   return (
-    <tr className="hover:bg-slate-50 transition-colors">
-      <td className="px-4 py-3 font-medium text-slate-900">{user.nom}</td>
-      <td className="px-4 py-3 text-slate-700">{user.prenom}</td>
-      <td className="px-4 py-3 text-slate-600">{user.email}</td>
-      <td className="px-4 py-3 text-slate-500 tabular-nums">
-        {user.createdAt.toLocaleDateString("fr-FR")}
-      </td>
-      <td className="px-4 py-3">
-        <div className="flex items-center justify-end gap-2">
+    <tr>
+      <td className="bold">{user.nom}</td>
+      <td>{user.prenom}</td>
+      <td className="muted">{user.email}</td>
+      <td className="muted">{user.createdAt.toLocaleDateString("fr-FR")}</td>
+      <td>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 6 }}>
           <form action={approuver}>
-            <button
-              type="submit"
-              className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white hover:bg-indigo-700 transition-colors"
-            >
-              Approuver
-            </button>
+            <button type="submit" className="btn btn-primary btn-sm">Approuver</button>
           </form>
           <form action={rejeter}>
-            <button
-              type="submit"
-              className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-red-600 border border-red-200 hover:bg-red-50 transition-colors"
-            >
-              Rejeter
-            </button>
+            <button type="submit" className="btn btn-danger btn-sm">Rejeter</button>
           </form>
         </div>
       </td>
@@ -195,13 +146,7 @@ async function EnAttenteRow({ user }: { user: UserRecord }) {
   );
 }
 
-async function UserRow({
-  user,
-  isSelf,
-}: {
-  user: UserRecord;
-  isSelf: boolean;
-}) {
+async function UserRow({ user, isSelf }: { user: UserRecord; isSelf: boolean }) {
   async function desactiver() {
     "use server";
     await updateUserStatut(user.id, "inactif");
@@ -218,71 +163,38 @@ async function UserRow({
   }
 
   return (
-    <tr className="hover:bg-slate-50 transition-colors">
-      <td className="px-4 py-3 font-medium text-slate-900">
+    <tr>
+      <td className="bold">
         {user.nom}
-        {isSelf && (
-          <span className="ml-1.5 text-xs text-slate-400">(vous)</span>
-        )}
+        {isSelf && <span className="muted" style={{ fontSize: 11, marginLeft: 6 }}>(vous)</span>}
       </td>
-      <td className="px-4 py-3 text-slate-700">{user.prenom}</td>
-      <td className="px-4 py-3 text-slate-600">{user.email}</td>
-      <td className="px-4 py-3">
+      <td>{user.prenom}</td>
+      <td className="muted">{user.email}</td>
+      <td>
         {isSelf ? (
           <RoleBadge role={user.role} />
         ) : (
-          <form action={changerRole} className="flex items-center gap-2">
-            <select
-              name="role"
-              defaultValue={user.role}
-              className="text-xs border border-slate-200 rounded-lg px-2 py-1 text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-300"
-            >
+          <form action={changerRole} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <select name="role" defaultValue={user.role} className="input btn-sm" style={{ width: "auto", height: 28, fontSize: 12 }}>
               <option value="commercial">Commercial</option>
               <option value="admin">Admin</option>
             </select>
-            <button
-              type="submit"
-              className="text-xs text-indigo-600 hover:text-indigo-800 font-medium transition-colors"
-            >
-              Appliquer
-            </button>
+            <button type="submit" className="btn btn-sm btn-ghost" style={{ fontSize: 11 }}>OK</button>
           </form>
         )}
       </td>
-      <td className="px-4 py-3">
-        <StatutBadge statut={user.statut} />
-      </td>
-      <td className="px-4 py-3">
+      <td><StatutBadge statut={user.statut} /></td>
+      <td>
         {!isSelf && (
-          <div className="flex justify-end">
+          <div style={{ display: "flex", justifyContent: "flex-end" }}>
             {user.statut === "actif" && (
               <form action={desactiver}>
-                <button
-                  type="submit"
-                  className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 transition-colors"
-                >
-                  Désactiver
-                </button>
+                <button type="submit" className="btn btn-sm">Désactiver</button>
               </form>
             )}
-            {user.statut === "inactif" && (
+            {(user.statut === "inactif" || user.statut === "refuse") && (
               <form action={reactiver}>
-                <button
-                  type="submit"
-                  className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 transition-colors"
-                >
-                  Réactiver
-                </button>
-              </form>
-            )}
-            {user.statut === "refuse" && (
-              <form action={reactiver}>
-                <button
-                  type="submit"
-                  className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 transition-colors"
-                >
-                  Réactiver
-                </button>
+                <button type="submit" className="btn btn-sm btn-primary">Réactiver</button>
               </form>
             )}
           </div>
@@ -292,36 +204,22 @@ async function UserRow({
   );
 }
 
-// ─── Badges ───────────────────────────────────────────────────────────────────
-
 function StatutBadge({ statut }: { statut: UserStatut }) {
-  const map: Record<UserStatut, { label: string; className: string }> = {
-    actif: { label: "Actif", className: "bg-green-100 text-green-800" },
-    inactif: { label: "Inactif", className: "bg-slate-100 text-slate-600" },
-    refuse: { label: "Refusé", className: "bg-red-100 text-red-700" },
-    en_attente: { label: "En attente", className: "bg-amber-100 text-amber-800" },
+  const map: Record<UserStatut, { label: string; cls: string }> = {
+    actif: { label: "Actif", cls: "badge pos" },
+    inactif: { label: "Inactif", cls: "badge" },
+    refuse: { label: "Refusé", cls: "badge neg" },
+    en_attente: { label: "En attente", cls: "badge warn" },
   };
-  const { label, className } = map[statut];
-  return (
-    <span
-      className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${className}`}
-    >
-      {label}
-    </span>
-  );
+  const { label, cls } = map[statut];
+  return <span className={cls}><span className="dot" />{label}</span>;
 }
 
 function RoleBadge({ role }: { role: Role }) {
-  const map: Record<Role, { label: string; className: string }> = {
-    admin: { label: "Admin", className: "bg-indigo-100 text-indigo-800" },
-    commercial: { label: "Commercial", className: "bg-slate-100 text-slate-700" },
+  const map: Record<Role, { label: string; cls: string }> = {
+    admin: { label: "Admin", cls: "badge accent" },
+    commercial: { label: "Commercial", cls: "badge" },
   };
-  const { label, className } = map[role];
-  return (
-    <span
-      className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${className}`}
-    >
-      {label}
-    </span>
-  );
+  const { label, cls } = map[role];
+  return <span className={cls}>{label}</span>;
 }

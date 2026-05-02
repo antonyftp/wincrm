@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>WIN CRM — Administration</title>
+<link rel="stylesheet" href="styles/system.css" />
+</head>
+<body>
+  <div class="app" id="app"></div>
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+  <script src="js/data.js"></script>
+  <script type="text/babel" src="js/chrome.jsx"></script>
+  <script type="text/babel">
+    const { useState } = React;
+    function App() {
+      const [tab, setTab] = useState("pending");
+      const pending = [
+        { name: "Sophie Martinez", email: "sophie.m@wincrm.fr", date: "Il y a 2h", role: "commercial" },
+        { name: "Lucas Bernard", email: "lucas.b@wincrm.fr", date: "Hier", role: "commercial" },
+        { name: "Émilie Roux", email: "emilie.r@wincrm.fr", date: "Il y a 3j", role: "commercial" },
+      ];
+      const active = WIN.AGENTS.map((a, i) => ({ ...a, role: i === 0 ? "admin" : "commercial", lastSeen: ["À l'instant", "Il y a 5min", "Il y a 1h", "Hier", "Il y a 2j"][i] }));
+      return (
+        <>
+          <Sidebar active="ADMIN" />
+          <main className="main">
+            <Topbar title="Administration" crumbs="Gestion des utilisateurs et des accès"
+              actions={<button className="btn btn-primary btn-sm"><Icon name="plus" size={14} /> Inviter un utilisateur</button>}
+            />
+            <div className="content">
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 16 }}>
+                <div className="stat"><span className="label">Utilisateurs actifs</span><div className="value">{WIN.AGENTS.length}</div><div className="delta neutral">5 commerciaux · 1 admin</div></div>
+                <div className="stat"><span className="label">En attente de validation</span><div className="value text-warn">{pending.length}</div><div className="delta neutral">À traiter</div></div>
+                <div className="stat"><span className="label">Comptes inactifs</span><div className="value">2</div><div className="delta neutral">Désactivés</div></div>
+                <div className="stat"><span className="label">Sessions actives</span><div className="value">3</div><div className="delta pos">● En ligne maintenant</div></div>
+              </div>
+              <div className="card">
+                <div className="tabs">
+                  <button className={`tab ${tab === "pending" ? "active" : ""}`} onClick={() => setTab("pending")}>En attente ({pending.length})</button>
+                  <button className={`tab ${tab === "active" ? "active" : ""}`} onClick={() => setTab("active")}>Actifs ({active.length})</button>
+                  <button className={`tab ${tab === "inactive" ? "active" : ""}`} onClick={() => setTab("inactive")}>Inactifs (2)</button>
+                  <button className={`tab ${tab === "rejected" ? "active" : ""}`} onClick={() => setTab("rejected")}>Refusés (0)</button>
+                </div>
+                {tab === "pending" && (
+                  <table className="table">
+                    <thead><tr><th>Utilisateur</th><th>Demandé</th><th>Rôle</th><th style={{ textAlign: "right" }}>Action</th></tr></thead>
+                    <tbody>
+                      {pending.map((p, i) => (
+                        <tr key={i}>
+                          <td><div className="row gap-3" style={{ alignItems: "center" }}><Avatar id={p.name.split(" ").map(n => n[0]).join("")} color="#94a3b8" /><div><div className="bold">{p.name}</div><div className="muted" style={{ fontSize: 12 }}>{p.email}</div></div></div></td>
+                          <td className="muted" style={{ fontSize: 13 }}>{p.date}</td>
+                          <td><Badge>{p.role}</Badge></td>
+                          <td style={{ textAlign: "right" }}>
+                            <div style={{ display: "inline-flex", gap: 6 }}>
+                              <button className="btn btn-sm btn-danger"><Icon name="x" size={13} /> Refuser</button>
+                              <button className="btn btn-sm btn-primary"><Icon name="check" size={13} /> Approuver</button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+                {tab === "active" && (
+                  <table className="table">
+                    <thead><tr><th>Utilisateur</th><th>Rôle</th><th>Leads</th><th>Dernière connexion</th><th style={{ textAlign: "right" }}>Actions</th></tr></thead>
+                    <tbody>
+                      {active.map((a) => (
+                        <tr key={a.id}>
+                          <td><div className="row gap-3" style={{ alignItems: "center" }}><Avatar id={a.id} name={a.name} color={a.color} /><div><div className="bold">{a.name}</div><div className="muted" style={{ fontSize: 12 }}>{a.email}</div></div></div></td>
+                          <td>{a.role === "admin" ? <Badge tone="accent" dot>Admin</Badge> : <Badge>Commercial</Badge>}</td>
+                          <td className="num bold">{WIN.LEADS.filter((l) => l.agent.id === a.id).length}</td>
+                          <td className="muted" style={{ fontSize: 13 }}>{a.lastSeen}</td>
+                          <td style={{ textAlign: "right" }}>
+                            <button className="btn btn-sm"><Icon name="edit" size={13} /> Modifier</button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+                {(tab === "inactive" || tab === "rejected") && <div className="empty">Aucun utilisateur dans cette catégorie pour le moment.</div>}
+              </div>
+            </div>
+          </main>
+        </>
+      );
+    }
+    ReactDOM.createRoot(document.getElementById("app")).render(<App />);
+  </script>
+</body>
+</html>

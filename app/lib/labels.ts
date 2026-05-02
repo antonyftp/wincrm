@@ -65,23 +65,18 @@ export const SITUATION_LABELS: Record<SituationMaritale, string> = {
 // ─── Badge helpers ───────────────────────────────────────────────────────────
 
 export function etatBadgeClass(etat: LeadEtat): string {
-  const green: LeadEtat[] = ["qualifie", "visite_effectuee", "offre_en_cours", "offre_acceptee"];
-  const red: LeadEtat[] = ["non_valide"];
-  const yellow: LeadEtat[] = ["reponse_envoyee", "contacte_telephone"];
+  const pos: LeadEtat[] = ["qualifie", "visite_effectuee", "offre_en_cours", "offre_acceptee"];
+  const neg: LeadEtat[] = ["non_valide"];
+  const warn: LeadEtat[] = ["reponse_envoyee", "contacte_telephone"];
 
-  if (green.includes(etat))
-    return "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800";
-  if (red.includes(etat))
-    return "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800";
-  if (yellow.includes(etat))
-    return "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800";
-  return "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700";
+  if (pos.includes(etat)) return "badge pos";
+  if (neg.includes(etat)) return "badge neg";
+  if (warn.includes(etat)) return "badge warn";
+  return "badge";
 }
 
 export function etapeBadgeClass(etape: LeadEtape): string {
-  if (etape === "conclu")
-    return "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800";
-  if (etape === "perdu")
-    return "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800";
-  return "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700";
+  if (etape === "conclu") return "badge pos";
+  if (etape === "perdu") return "badge neg";
+  return "badge info";
 }
