@@ -1,24 +1,13 @@
 import type { DashboardData } from "@/app/actions/dashboard";
+import { ETAPE_LABELS } from "@/app/lib/labels";
+import type { LeadEtape } from "@prisma/client";
 
 type Props = {
   data: DashboardData;
   userName: string;
 };
 
-const ETAPE_LABELS: Record<string, string> = {
-  nouveau_contact: "Nouveau contact",
-  en_attente_qualification: "En attente de qualification",
-  qualifie: "Contact qualifié",
-  biens_proposes: "Biens proposés",
-  visite_programmee: "Visite programmée",
-  visite_effectuee: "Visite effectuée",
-  relance_apres_visite: "Relance après visite",
-  offre_negociation: "Offre / Négociation",
-  conclu: "Conclu",
-  perdu: "Perdu",
-};
-
-const ETAPE_ORDER = [
+const ETAPE_ORDER: LeadEtape[] = [
   "nouveau_contact",
   "en_attente_qualification",
   "qualifie",

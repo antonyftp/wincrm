@@ -1,4 +1,11 @@
-import { LeadEtat, LeadEtape, NatureRecherche, TypeLogement, ActionType } from "@prisma/client";
+import {
+  ActionType,
+  LeadEtape,
+  LeadEtat,
+  NatureRecherche,
+  SituationMaritale,
+  TypeLogement,
+} from "@prisma/client";
 
 export const ETAT_LABELS: Record<LeadEtat, string> = {
   nouveau: "Nouveau",
@@ -48,9 +55,33 @@ export const ACTION_TYPE_LABELS: Record<ActionType, string> = {
   relance: "Relance",
 };
 
-export const SITUATION_LABELS: Record<string, string> = {
+export const SITUATION_LABELS: Record<SituationMaritale, string> = {
   marie: "Marié(e)",
   veuf: "Veuf/Veuve",
   celibataire: "Célibataire",
   divorce: "Divorcé(e)",
 };
+
+// ─── Badge helpers ───────────────────────────────────────────────────────────
+
+export function etatBadgeClass(etat: LeadEtat): string {
+  const green: LeadEtat[] = ["qualifie", "visite_effectuee", "offre_en_cours", "offre_acceptee"];
+  const red: LeadEtat[] = ["non_valide"];
+  const yellow: LeadEtat[] = ["reponse_envoyee", "contacte_telephone"];
+
+  if (green.includes(etat))
+    return "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800";
+  if (red.includes(etat))
+    return "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800";
+  if (yellow.includes(etat))
+    return "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800";
+  return "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700";
+}
+
+export function etapeBadgeClass(etape: LeadEtape): string {
+  if (etape === "conclu")
+    return "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800";
+  if (etape === "perdu")
+    return "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800";
+  return "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700";
+}

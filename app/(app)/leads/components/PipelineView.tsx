@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Prisma } from "@prisma/client";
 import { LeadEtape } from "@prisma/client";
-import { ETAPE_LABELS, ETAT_LABELS, NATURE_LABELS, TYPE_LABELS, etatBadgeClass } from "../lib/labels";
+import { ETAPE_LABELS, ETAT_LABELS, NATURE_LABELS, TYPE_LABELS, etatBadgeClass } from "@/app/lib/labels";
 
 type LeadWithTitulaire = Prisma.LeadGetPayload<{
   include: { titulaire: { select: { id: true; nom: true; prenom: true } } };

@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { ETAT_LABELS, ETAPE_LABELS } from "../lib/labels";
+import { ETAT_LABELS, ETAPE_LABELS } from "@/app/lib/labels";
 import type { LeadEtat, LeadEtape } from "@prisma/client";
 
 type Props = {

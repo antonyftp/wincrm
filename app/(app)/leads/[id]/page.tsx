@@ -2,7 +2,15 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getLead } from "@/app/actions/leads";
 import { getSession } from "@/app/lib/session";
-import { ETAT_LABELS, ETAPE_LABELS, etatBadgeClass, etapeBadgeClass } from "../lib/labels";
+import {
+  ETAT_LABELS,
+  ETAPE_LABELS,
+  NATURE_LABELS,
+  SITUATION_LABELS,
+  TYPE_LABELS,
+  etatBadgeClass,
+  etapeBadgeClass,
+} from "@/app/lib/labels";
 import DeleteButton from "../components/DeleteButton";
 import CommentSection from "../components/CommentSection";
 import VisitSection from "../components/VisitSection";
@@ -97,12 +105,7 @@ export default async function LeadDetailPage({
                 label="Situation maritale"
                 value={
                   lead.situationMaritale
-                    ? ({
-                        marie: "Marié(e)",
-                        veuf: "Veuf/Veuve",
-                        celibataire: "Célibataire",
-                        divorce: "Divorcé(e)",
-                      } as Record<string, string>)[lead.situationMaritale]
+                    ? SITUATION_LABELS[lead.situationMaritale]
                     : null
                 }
               />
@@ -153,11 +156,7 @@ export default async function LeadDetailPage({
                 label="Nature recherche"
                 value={
                   lead.natureRecherche
-                    ? ({
-                        achat: "Achat",
-                        location: "Location",
-                        investissement: "Investissement",
-                      } as Record<string, string>)[lead.natureRecherche]
+                    ? NATURE_LABELS[lead.natureRecherche]
                     : null
                 }
               />
@@ -165,15 +164,7 @@ export default async function LeadDetailPage({
                 label="Type logement"
                 value={
                   lead.typeLogement
-                    ? ({
-                        appartement: "Appartement",
-                        maison: "Maison",
-                        studio: "Studio",
-                        t2: "T2",
-                        t3: "T3",
-                        t4: "T4",
-                        autre: "Autre",
-                      } as Record<string, string>)[lead.typeLogement]
+                    ? TYPE_LABELS[lead.typeLogement]
                     : null
                 }
               />

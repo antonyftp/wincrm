@@ -5,7 +5,7 @@
 - **Framework** : Next.js 16.2.4 (App Router) + TypeScript
 - **Style** : TailwindCSS 4
 - **Base de données** : Supabase (PostgreSQL hébergé, compatible Vercel)
-- **Auth** : NextAuth.js v5 avec credentials provider
+- **Auth** : Supabase Auth (email/password) — workflow d'approbation admin via le champ Prisma `User.statut`
 - **ORM** : Prisma
 - **Déploiement** : Vercel
 

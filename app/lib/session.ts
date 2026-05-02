@@ -39,7 +39,12 @@ export async function getSession(): Promise<SessionPayload | null> {
     select: { id: true, role: true, statut: true },
   });
 
-  if (!dbUser) return null;
+  // Reject any user whose account is not currently `actif` (en_attente, refuse,
+  // inactif). Centralising the check here means an admin disabling an account
+  // takes effect on the next request — without it, downstream `session != null`
+  // guards would let a revoked user keep working until their Supabase session
+  // expires (up to ~1h by default, longer with refresh tokens).
+  if (!dbUser || dbUser.statut !== "actif") return null;
 
   return {
     userId: dbUser.id,

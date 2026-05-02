@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { getLeads, getCommercials } from "@/app/actions/leads";
 import { getSession } from "@/app/lib/session";
-import { ETAT_LABELS, ETAPE_LABELS, etatBadgeClass } from "./lib/labels";
+import { ETAT_LABELS, ETAPE_LABELS, etatBadgeClass } from "@/app/lib/labels";
 import DeleteButton from "./components/DeleteButton";
 import LeadsFilters from "./components/LeadsFilters";
 import PipelineView from "./components/PipelineView";

@@ -11,7 +11,7 @@ import {
   TypeLogement,
 } from "@prisma/client";
 import type { FormState } from "@/app/actions/leads";
-import { ETAT_LABELS, ETAPE_LABELS } from "../lib/labels";
+import { ETAT_LABELS, ETAPE_LABELS } from "@/app/lib/labels";
 
 type LeadWithTitulaire = {
   id: string;

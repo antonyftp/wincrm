@@ -1,10 +1,16 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/app/lib/session";
 import { ActionType } from "@prisma/client";
 
 const ACTION_TYPES = new Set<string>(["appel", "email", "rdv", "visite", "relance"]);
+
+function revalidateLead(leadId: string) {
+  revalidatePath("/leads");
+  revalidatePath(`/leads/${leadId}`);
+}
 
 async function canAccessLead(
   leadId: string,
@@ -41,6 +47,7 @@ export async function addComment(
     await prisma.comment.create({
       data: { content: trimmed, leadId, authorId: session.userId },
     });
+    revalidateLead(leadId);
     return {};
   } catch {
     return { error: "Erreur lors de l'ajout du commentaire." };
@@ -57,6 +64,7 @@ export async function deleteComment(
     where: { id: commentId },
     select: {
       authorId: true,
+      leadId: true,
       lead: { select: { titulaireId: true } },
     },
   });
@@ -76,6 +84,7 @@ export async function deleteComment(
 
   try {
     await prisma.comment.delete({ where: { id: commentId } });
+    revalidateLead(comment.leadId);
     return {};
   } catch {
     return { error: "Erreur lors de la suppression du commentaire." };
@@ -105,6 +114,7 @@ export async function addVisit(
     await prisma.visit.create({
       data: { bien: bienTrimmed, dateVisite: parsed, leadId },
     });
+    revalidateLead(leadId);
     return {};
   } catch {
     return { error: "Erreur lors de l'ajout de la visite." };
@@ -119,7 +129,10 @@ export async function deleteVisit(
 
   const visit = await prisma.visit.findUnique({
     where: { id: visitId },
-    select: { lead: { select: { titulaireId: true } } },
+    select: {
+      leadId: true,
+      lead: { select: { titulaireId: true } },
+    },
   });
   if (!visit) return { error: "Visite introuvable." };
 
@@ -134,6 +147,7 @@ export async function deleteVisit(
 
   try {
     await prisma.visit.delete({ where: { id: visitId } });
+    revalidateLead(visit.leadId);
     return {};
   } catch {
     return { error: "Erreur lors de la suppression de la visite." };
@@ -162,6 +176,7 @@ export async function planifierAction(
     await prisma.action.create({
       data: { type: type as ActionType, date: parsed, leadId, done: false },
     });
+    revalidateLead(leadId);
     return {};
   } catch {
     return { error: "Erreur lors de la planification de l'action." };
@@ -176,7 +191,10 @@ export async function completerAction(
 
   const action = await prisma.action.findUnique({
     where: { id: actionId },
-    select: { lead: { select: { titulaireId: true } } },
+    select: {
+      leadId: true,
+      lead: { select: { titulaireId: true } },
+    },
   });
   if (!action) return { error: "Action introuvable." };
 
@@ -191,6 +209,7 @@ export async function completerAction(
 
   try {
     await prisma.action.update({ where: { id: actionId }, data: { done: true } });
+    revalidateLead(action.leadId);
     return {};
   } catch {
     return { error: "Erreur lors de la mise à jour de l'action." };
@@ -205,7 +224,10 @@ export async function supprimerAction(
 
   const action = await prisma.action.findUnique({
     where: { id: actionId },
-    select: { lead: { select: { titulaireId: true } } },
+    select: {
+      leadId: true,
+      lead: { select: { titulaireId: true } },
+    },
   });
   if (!action) return { error: "Action introuvable." };
 
@@ -220,6 +242,7 @@ export async function supprimerAction(
 
   try {
     await prisma.action.delete({ where: { id: actionId } });
+    revalidateLead(action.leadId);
     return {};
   } catch {
     return { error: "Erreur lors de la suppression de l'action." };

@@ -42,6 +42,28 @@ const SITUATIONS_MARITALES = new Set<string>(["marie", "veuf", "celibataire", "d
 
 const titulaireSelect = { select: { id: true, nom: true, prenom: true } } as const;
 
+function parseOptionalInt(
+  raw: FormDataEntryValue | null,
+  fieldName: string
+): { value: number | undefined } | { error: string } {
+  const str = (raw as string | null)?.trim();
+  if (!str) return { value: undefined };
+  const n = Number.parseInt(str, 10);
+  if (Number.isNaN(n)) return { error: `${fieldName} invalide.` };
+  return { value: n };
+}
+
+function parseOptionalFloat(
+  raw: FormDataEntryValue | null,
+  fieldName: string
+): { value: number | undefined } | { error: string } {
+  const str = (raw as string | null)?.trim();
+  if (!str) return { value: undefined };
+  const n = Number.parseFloat(str);
+  if (Number.isNaN(n)) return { error: `${fieldName} invalide.` };
+  return { value: n };
+}
+
 export async function getLeads(filters: LeadsFilters = {}) {
   const session = await getSession();
   if (!session) return { error: "Non authentifié." };
@@ -66,7 +88,12 @@ export async function getLeads(filters: LeadsFilters = {}) {
     });
   }
 
-  if (commercial) conditions.push({ titulaireId: commercial });
+  // Non-admins may only filter by their own commercial ID
+  if (commercial) {
+    if (session.role === "admin" || commercial === session.userId) {
+      conditions.push({ titulaireId: commercial });
+    }
+  }
   if (etat && LEAD_ETATS.has(etat)) conditions.push({ etat: etat as LeadEtat });
   if (etape && LEAD_ETAPES.has(etape)) conditions.push({ etape: etape as LeadEtape });
   if (typeLogement && TYPES_LOGEMENT.has(typeLogement)) conditions.push({ typeLogement: typeLogement as TypeLogement });
@@ -158,21 +185,21 @@ export async function createLead(
   if (situationMaritaleRaw && !SITUATIONS_MARITALES.has(situationMaritaleRaw))
     return { error: "Situation maritale invalide." };
 
-  const ageRaw = formData.get("age");
-  const budgetMinRaw = formData.get("budgetMin");
-  const budgetMaxRaw = formData.get("budgetMax");
-  const heritierRaw = formData.get("heritier");
+  const ageResult = parseOptionalInt(formData.get("age"), "Âge");
+  if ("error" in ageResult) return { error: ageResult.error };
+  const budgetMinResult = parseOptionalFloat(formData.get("budgetMin"), "Budget min");
+  if ("error" in budgetMinResult) return { error: budgetMinResult.error };
+  const budgetMaxResult = parseOptionalFloat(formData.get("budgetMax"), "Budget max");
+  if ("error" in budgetMaxResult) return { error: budgetMaxResult.error };
 
-  const age = ageRaw ? parseInt(ageRaw as string, 10) : undefined;
-  const budgetMin = budgetMinRaw ? parseFloat(budgetMinRaw as string) : undefined;
-  const budgetMax = budgetMaxRaw ? parseFloat(budgetMaxRaw as string) : undefined;
+  const age = ageResult.value;
+  const budgetMin = budgetMinResult.value;
+  const budgetMax = budgetMaxResult.value;
 
-  if (ageRaw && isNaN(age!)) return { error: "Âge invalide." };
-  if (budgetMinRaw && isNaN(budgetMin!)) return { error: "Budget min invalide." };
-  if (budgetMaxRaw && isNaN(budgetMax!)) return { error: "Budget max invalide." };
   if (budgetMin !== undefined && budgetMax !== undefined && budgetMin > budgetMax)
     return { error: "Le budget min ne peut pas être supérieur au budget max." };
 
+  const heritierRaw = formData.get("heritier");
   const heritier =
     heritierRaw === null ? undefined : heritierRaw === "true" || heritierRaw === "1";
 
@@ -257,21 +284,21 @@ export async function updateLead(
   if (situationMaritaleRaw && !SITUATIONS_MARITALES.has(situationMaritaleRaw))
     return { error: "Situation maritale invalide." };
 
-  const ageRaw = formData.get("age");
-  const budgetMinRaw = formData.get("budgetMin");
-  const budgetMaxRaw = formData.get("budgetMax");
-  const heritierRaw = formData.get("heritier");
+  const ageResult = parseOptionalInt(formData.get("age"), "Âge");
+  if ("error" in ageResult) return { error: ageResult.error };
+  const budgetMinResult = parseOptionalFloat(formData.get("budgetMin"), "Budget min");
+  if ("error" in budgetMinResult) return { error: budgetMinResult.error };
+  const budgetMaxResult = parseOptionalFloat(formData.get("budgetMax"), "Budget max");
+  if ("error" in budgetMaxResult) return { error: budgetMaxResult.error };
 
-  const age = ageRaw ? parseInt(ageRaw as string, 10) : null;
-  const budgetMin = budgetMinRaw ? parseFloat(budgetMinRaw as string) : null;
-  const budgetMax = budgetMaxRaw ? parseFloat(budgetMaxRaw as string) : null;
+  const age = ageResult.value ?? null;
+  const budgetMin = budgetMinResult.value ?? null;
+  const budgetMax = budgetMaxResult.value ?? null;
 
-  if (ageRaw && isNaN(age!)) return { error: "Âge invalide." };
-  if (budgetMinRaw && isNaN(budgetMin!)) return { error: "Budget min invalide." };
-  if (budgetMaxRaw && isNaN(budgetMax!)) return { error: "Budget max invalide." };
   if (budgetMin !== null && budgetMax !== null && budgetMin > budgetMax)
     return { error: "Le budget min ne peut pas être supérieur au budget max." };
 
+  const heritierRaw = formData.get("heritier");
   const heritier =
     heritierRaw === null ? null : heritierRaw === "true" || heritierRaw === "1";
 

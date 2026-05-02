@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
 type ActionResult = { success: true } | { error: string };
@@ -54,10 +55,17 @@ export async function register(formData: FormData): Promise<ActionResult> {
       },
     });
   } catch {
-    // Local row creation failed — best-effort sign out so the orphan Supabase
-    // identity does not stay logged in. The Supabase row will linger; the
-    // admin must clean it up manually if it ever happens.
-    await supabase.auth.signOut();
+    // Local row creation failed — clean up the orphan Supabase auth.users row
+    // so the email can be reused. Without this, the user is stuck: Supabase
+    // refuses re-registration with the same email, and Prisma has no row to
+    // recover from. We swallow admin-delete errors (env var missing, network)
+    // and fall back to signOut so the browser at least is not left logged in.
+    try {
+      const admin = createAdminClient();
+      await admin.auth.admin.deleteUser(data.user.id);
+    } catch {
+      await supabase.auth.signOut();
+    }
     return {
       error:
         "Erreur lors de la création du compte. Contactez l'administrateur.",
