@@ -102,10 +102,19 @@ export async function login(formData: FormData): Promise<ActionResult> {
     return { error: "Email ou mot de passe incorrect." };
   }
 
-  const dbUser = await prisma.user.findUnique({
-    where: { supabaseId: data.user.id },
-    select: { id: true, role: true, statut: true },
-  });
+  let dbUser: { id: string; role: import("@prisma/client").Role; statut: import("@prisma/client").UserStatut } | null;
+  try {
+    dbUser = await prisma.user.findUnique({
+      where: { supabaseId: data.user.id },
+      select: { id: true, role: true, statut: true },
+    });
+  } catch {
+    // DB unreachable (pool saturation, network). Sign out so the Supabase
+    // cookie isn't left in a semi-authenticated state, then return a clear
+    // error instead of hanging indefinitely.
+    await supabase.auth.signOut();
+    return { error: "Service temporairement indisponible. Réessayez dans quelques instants." };
+  }
 
   if (!dbUser) {
     // Inconsistent state: Supabase identity exists but no Prisma row.

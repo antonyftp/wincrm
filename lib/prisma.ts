@@ -6,7 +6,23 @@ function createPrismaClient(): PrismaClient {
   if (!connectionString) {
     throw new Error("DATABASE_URL environment variable is not set");
   }
-  const adapter = new PrismaPg({ connectionString });
+  // max:2 prevents pool exhaustion on Supabase free tier (15 connections total).
+  // connectionTimeoutMillis: fail fast instead of queuing indefinitely — surfaces
+  // errors clearly rather than hanging a login (root cause of reconnection issues).
+  // onPoolError logs idle-client crashes that otherwise disappear silently.
+  const adapter = new PrismaPg(
+    {
+      connectionString,
+      max: 2,
+      connectionTimeoutMillis: 5_000,
+      idleTimeoutMillis: 10_000,
+    },
+    {
+      onPoolError: (err: Error) => {
+        console.error("[prisma-pool] idle client error:", err.message);
+      },
+    },
+  );
   return new PrismaClient({
     adapter,
     log:
