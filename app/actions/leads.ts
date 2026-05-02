@@ -354,7 +354,7 @@ export async function getCommercials() {
   if (!session) return { error: "Non authentifié." };
 
   return prisma.user.findMany({
-    where: { statut: "actif", role: "commercial" },
+    where: { statut: "actif" },
     select: { id: true, nom: true, prenom: true },
     orderBy: [{ nom: "asc" }, { prenom: "asc" }],
   });

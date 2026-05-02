@@ -22,15 +22,19 @@ Stack : Next.js 16 + Prisma v7 + Supabase (Postgres + Auth) + Vercel
 
 ### Récupérer la chaîne de connexion DB
 
-Dans ton projet Supabase → **Project Settings → Database → Connection string**
+Dans ton projet Supabase → **Project Settings → Database → Connection string**, choisis l'onglet **Session** (port 5432 du pooler Supavisor).
 
-Choisis l'onglet **URI** et copie l'URL. Elle ressemble à :
+L'URL ressemble à :
 
 ```
-postgresql://postgres:[TON-MOT-DE-PASSE]@db.[PROJECT-REF].supabase.co:5432/postgres
+postgresql://postgres.[PROJECT-REF]:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:5432/postgres
 ```
 
-> **Note :** Utilise le port **5432** (connexion directe). Ne pas utiliser le pooler (port 6543) pour ce projet — l'adaptateur `PrismaPg` gère lui-même le pool de connexions.
+> **⚠️ Ne PAS utiliser la connexion directe** (`db.[PROJECT-REF].supabase.co:5432`) : Supabase l'a passée en IPv6-only sur le plan gratuit (mi-2024). Elle est inaccessible depuis la plupart des environnements (WSL2, certains réseaux d'entreprise). Le pooler Supavisor résout en IPv4 et est compatible serverless (Vercel).
+>
+> **Pourquoi le mode "Session" et pas "Transaction" (port 6543) ?** Le mode Session supporte les opérations DDL (`prisma db push`, migrations). Pour ce projet à faible concurrence, une seule URL suffit pour runtime + migrations. Si la charge augmente, on pourra splitter `DATABASE_URL` (Transaction, port 6543) et `DIRECT_URL` (Session, port 5432).
+>
+> Le username est `postgres.PROJECT-REF` (avec le ref du projet en suffixe), pas `postgres` seul.
 
 ### Récupérer les clés Supabase Auth
 
