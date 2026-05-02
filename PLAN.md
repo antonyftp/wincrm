@@ -196,7 +196,7 @@
 ---
 
 ### Phase 10 — Migration Supabase Auth
-**Statut** : `[ ] À faire`
+**Statut** : `[x] Terminé`
 
 **Objectif** : Remplacer le système d'auth custom (JWT jose + bcryptjs) par Supabase Auth, en conservant le workflow d'approbation admin (statut Prisma) et les rôles.
 
@@ -255,4 +255,4 @@
 | 7 | Exports Excel/PDF | Backend Architect | `[x]` |
 | 8 | Espace Admin | Senior Developer | `[x]` |
 | 9 | Finitions & Déploiement | DevOps Automator | `[x]` |
-| 10 | Migration Supabase Auth | `Security Engineer` + `Backend Architect` | `[ ]` |
+| 10 | Migration Supabase Auth | `Security Engineer` + `Backend Architect` | `[x]` |

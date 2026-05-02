@@ -1,29 +1,27 @@
-import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { decrypt } from "@/app/lib/session";
+import { updateSession } from "@/lib/supabase/middleware";
 
-const PUBLIC_PATHS = ["/login", "/register"];
-
-export async function proxy(req: NextRequest) {
-  const { pathname } = req.nextUrl;
-  const isPublic = PUBLIC_PATHS.some(
-    (p) => pathname === p || pathname.startsWith(p + "/")
-  );
-
-  const token = req.cookies.get("session")?.value ?? null;
-  const session = token ? await decrypt(token) : null;
-
-  if (!session && !isPublic) {
-    return NextResponse.redirect(new URL("/login", req.url));
-  }
-
-  if (session && isPublic) {
-    return NextResponse.redirect(new URL("/dashboard", req.url));
-  }
-
-  return NextResponse.next();
+/**
+ * Root proxy (Next.js 16, formerly `middleware.ts`).
+ *
+ * Sole responsibility: refresh the Supabase auth session cookies on every
+ * matched request. Authorization (redirects for unauthenticated users,
+ * role checks, etc.) is handled inside pages and Server Actions via
+ * `getSession()`.
+ */
+export async function proxy(request: NextRequest) {
+  return updateSession(request);
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  matcher: [
+    /*
+     * Match all paths except:
+     *  - _next/static  (static build assets)
+     *  - _next/image   (Next image optimization)
+     *  - favicon.ico
+     *  - common static asset extensions (svg, png, jpg, jpeg, gif, webp, ico)
+     */
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+  ],
 };
