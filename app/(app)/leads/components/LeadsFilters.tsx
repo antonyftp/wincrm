@@ -1,9 +1,9 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { ETAT_LABELS, ETAPE_LABELS } from "@/app/lib/labels";
-import type { LeadEtat, LeadEtape } from "@prisma/client";
+import { ETAT_LABELS, ETAPE_LABELS, TYPE_LABELS } from "@/app/lib/labels";
+import type { LeadEtat, LeadEtape, TypeLogement } from "@prisma/client";
 
 type Props = {
   commercials: { id: string; nom: string; prenom: string }[];
@@ -24,6 +24,7 @@ function sortKey(sortBy: string, sortDir: string): string {
 
 export default function LeadsFilters({ commercials }: Props) {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
 
   const [q, setQ] = useState(searchParams.get("q") ?? "");
@@ -32,6 +33,7 @@ export default function LeadsFilters({ commercials }: Props) {
   const commercial = searchParams.get("commercial") ?? "";
   const etat = searchParams.get("etat") ?? "";
   const etape = searchParams.get("etape") ?? "";
+  const typeLogement = searchParams.get("typeLogement") ?? "";
   const natureRecherche = searchParams.get("natureRecherche") ?? "";
   const sortBy = searchParams.get("sortBy") ?? "dateSaisie";
   const sortDir = searchParams.get("sortDir") ?? "desc";
@@ -48,7 +50,7 @@ export default function LeadsFilters({ commercials }: Props) {
         params.delete(key);
       }
     }
-    router.push(`/leads?${params.toString()}`);
+    router.push(`${pathname}?${params.toString()}`);
   }
 
   useEffect(() => {
@@ -61,7 +63,7 @@ export default function LeadsFilters({ commercials }: Props) {
       } else {
         params.delete("q");
       }
-      router.push(`/leads?${params.toString()}`);
+      router.push(`${pathname}?${params.toString()}`);
     }, 300);
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -77,11 +79,11 @@ export default function LeadsFilters({ commercials }: Props) {
   function handleReset() {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     setQ("");
-    router.push(`/leads?view=${view}`);
+    router.push(pathname);
   }
 
   const hasActiveFilters =
-    !!q || !!commercial || !!etat || !!etape || !!natureRecherche ||
+    !!q || !!commercial || !!etat || !!etape || !!typeLogement || !!natureRecherche ||
     sortBy !== "dateSaisie" || sortDir !== "desc";
 
   return (
@@ -129,6 +131,18 @@ export default function LeadsFilters({ commercials }: Props) {
       >
         <option value="">Toutes les étapes</option>
         {(Object.entries(ETAPE_LABELS) as [LeadEtape, string][]).map(([value, label]) => (
+          <option key={value} value={value}>{label}</option>
+        ))}
+      </select>
+
+      <select
+        value={typeLogement}
+        onChange={(e) => pushParams({ typeLogement: e.target.value })}
+        className="input"
+        style={{ flex: 1, minWidth: 140 }}
+      >
+        <option value="">Tous types</option>
+        {(Object.entries(TYPE_LABELS) as [TypeLogement, string][]).map(([value, label]) => (
           <option key={value} value={value}>{label}</option>
         ))}
       </select>

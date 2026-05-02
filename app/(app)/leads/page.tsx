@@ -5,7 +5,6 @@ import { getSession } from "@/app/lib/session";
 import { ETAT_LABELS, ETAPE_LABELS, etatBadgeClass } from "@/app/lib/labels";
 import DeleteButton from "./components/DeleteButton";
 import LeadsFilters from "./components/LeadsFilters";
-import PipelineView from "./components/PipelineView";
 import LeadsARelancer from "./components/LeadsARelancer";
 import Topbar from "../components/Topbar";
 
@@ -14,11 +13,6 @@ type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 function str(value: string | string[] | undefined): string {
   if (!value) return "";
   return Array.isArray(value) ? value[0] ?? "" : value;
-}
-
-function buildViewParam(spStrings: Record<string, string>, targetView: string): string {
-  const params = new URLSearchParams({ ...spStrings, view: targetView });
-  return `/leads?${params.toString()}`;
 }
 
 export default async function LeadsPage({ searchParams }: { searchParams: SearchParams }) {
@@ -32,7 +26,6 @@ export default async function LeadsPage({ searchParams }: { searchParams: Search
   const natureRecherche = str(sp.natureRecherche);
   const sortBy = str(sp.sortBy);
   const sortDir = (str(sp.sortDir) || "desc") as "asc" | "desc";
-  const view = str(sp.view) || "list";
 
   const filters = {
     ...(q && { q }),
@@ -45,11 +38,6 @@ export default async function LeadsPage({ searchParams }: { searchParams: Search
     sortDir,
   };
 
-  const spStrings: Record<string, string> = {};
-  for (const [k, v] of Object.entries(sp)) {
-    if (v && !Array.isArray(v)) spStrings[k] = v;
-  }
-
   const [leadsResult, commercialsResult, session] = await Promise.all([
     getLeads(filters),
     getCommercials(),
@@ -59,9 +47,6 @@ export default async function LeadsPage({ searchParams }: { searchParams: Search
   const leads = Array.isArray(leadsResult) ? leadsResult : [];
   const commercials = Array.isArray(commercialsResult) ? commercialsResult : [];
   const isAdmin = session?.role === "admin";
-
-  const listHref = buildViewParam(spStrings, "list");
-  const pipelineHref = buildViewParam(spStrings, "pipeline");
 
   const exportParams = new URLSearchParams();
   if (q) exportParams.set("q", q);
@@ -81,22 +66,6 @@ export default async function LeadsPage({ searchParams }: { searchParams: Search
         crumbs={`${leads.length} contacts dans votre base`}
         actions={
           <>
-            <div style={{ display: "flex", border: "1px solid var(--border-strong)", borderRadius: 8, overflow: "hidden" }}>
-              <Link
-                href={listHref}
-                className={`btn btn-sm${view !== "pipeline" ? " btn-primary" : " btn-ghost"}`}
-                style={{ borderRadius: 0, border: "none" }}
-              >
-                Liste
-              </Link>
-              <Link
-                href={pipelineHref}
-                className={`btn btn-sm${view === "pipeline" ? " btn-primary" : " btn-ghost"}`}
-                style={{ borderRadius: 0, border: "none" }}
-              >
-                Pipeline
-              </Link>
-            </div>
             <a href={exportUrl} className="btn btn-sm">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/>
@@ -124,9 +93,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: Search
           </div>
         </div>
 
-        {view === "pipeline" ? (
-          <PipelineView leads={leads} />
-        ) : leads.length === 0 ? (
+        {leads.length === 0 ? (
           <div className="empty" style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--r-lg)" }}>
             <p className="bold" style={{ margin: "0 0 4px" }}>Aucun lead pour l&apos;instant</p>
             <p style={{ margin: "0 0 16px" }}>Commencez par créer votre premier lead.</p>

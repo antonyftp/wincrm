@@ -15,6 +15,7 @@ type Props = {
 const NAV_ITEMS = [
   { href: "/dashboard", icon: "home", label: "Tableau de bord" },
   { href: "/leads", icon: "users", label: "Leads" },
+  { href: "/pipeline", icon: "columns", label: "Pipeline" },
 ];
 
 const ADMIN_ITEMS = [
@@ -26,6 +27,7 @@ export default function Sidebar({ userName, userEmail, userInitials, isAdmin }: 
 
   function isActive(href: string) {
     if (href === "/dashboard") return pathname === "/dashboard";
+    if (href === "/leads") return pathname.startsWith("/leads");
     return pathname.startsWith(href);
   }
 

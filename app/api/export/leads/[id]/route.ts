@@ -169,6 +169,10 @@ async function fetchLead(id: string) {
   });
 }
 
+function formatMontant(value: number): string {
+  return Math.round(value).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+}
+
 function buildPdfDocument(lead: NonNullable<LeadWithRelations>) {
   const exportDate = new Date().toLocaleDateString("fr-FR", {
     day: "numeric",
@@ -267,17 +271,11 @@ function buildPdfDocument(lead: NonNullable<LeadWithRelations>) {
           }),
           React.createElement(Field, {
             label: "Budget min",
-            value:
-              lead.budgetMin !== null
-                ? `${lead.budgetMin.toLocaleString("fr-FR")} €`
-                : null,
+            value: lead.budgetMin !== null ? `${formatMontant(lead.budgetMin)} €` : null,
           }),
           React.createElement(Field, {
             label: "Budget max",
-            value:
-              lead.budgetMax !== null
-                ? `${lead.budgetMax.toLocaleString("fr-FR")} €`
-                : null,
+            value: lead.budgetMax !== null ? `${formatMontant(lead.budgetMax)} €` : null,
           }),
           React.createElement(FieldFull, {
             label: "Critères spécifiques",

@@ -80,6 +80,13 @@ export default function NavMobile({ isAdmin }: Props) {
             >
               Leads
             </Link>
+            <Link
+              href="/pipeline"
+              onClick={() => setOpen(false)}
+              className="px-3 py-2.5 text-sm font-medium text-slate-700 rounded-lg hover:bg-slate-50 transition-colors"
+            >
+              Pipeline
+            </Link>
             {isAdmin && (
               <Link
                 href="/admin"

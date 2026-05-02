@@ -349,6 +349,37 @@ export async function deleteLead(id: string): Promise<FormState> {
   redirect("/leads");
 }
 
+export async function updateLeadEtape(
+  id: string,
+  etape: LeadEtape
+): Promise<{ error: string } | null> {
+  const session = await getSession();
+  if (!session) return { error: "Non authentifié." };
+
+  if (!LEAD_ETAPES.has(etape)) return { error: "Étape invalide." };
+
+  const existing = await prisma.lead.findUnique({
+    where: { id },
+    select: { titulaireId: true },
+  });
+  if (!existing) return { error: "Lead introuvable." };
+
+  if (
+    session.role !== "admin" &&
+    existing.titulaireId !== null &&
+    existing.titulaireId !== session.userId
+  ) {
+    return { error: "Accès refusé." };
+  }
+
+  try {
+    await prisma.lead.update({ where: { id }, data: { etape } });
+    return null;
+  } catch {
+    return { error: "Erreur lors de la mise à jour." };
+  }
+}
+
 export async function getCommercials() {
   const session = await getSession();
   if (!session) return { error: "Non authentifié." };
