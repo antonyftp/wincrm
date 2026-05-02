@@ -14,7 +14,7 @@ export default function Topbar({ title, crumbs, actions }: Props) {
         {crumbs && <div className="crumbs">{crumbs}</div>}
         <h1>{title}</h1>
       </div>
-      <div className="right">
+      <div className="right topbar-actions">
         {actions}
         <ThemeToggle />
       </div>

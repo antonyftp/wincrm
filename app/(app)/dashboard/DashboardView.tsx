@@ -88,7 +88,7 @@ export default function DashboardView({ data }: Props) {
 
       <div className="content">
         {/* KPI */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 16 }}>
+        <div className="stats-grid" style={{ marginBottom: 16 }}>
           <div className="stat">
             <div className="row between">
               <span className="label">Total leads</span>
@@ -143,7 +143,7 @@ export default function DashboardView({ data }: Props) {
         </div>
 
         {/* Acquisition chart + Pipeline */}
-        <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: 16, marginBottom: 16 }}>
+        <div className="dashboard-grid" style={{ marginBottom: 16 }}>
           <div className="card">
             <div className="card-h">
               <h3>Acquisition de leads</h3>
@@ -179,7 +179,7 @@ export default function DashboardView({ data }: Props) {
         </div>
 
         {/* Prochaines actions + Performance commerciaux */}
-        <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: 16 }}>
+        <div className="dashboard-grid">
           <div className="card">
             <div className="card-h">
               <h3>Prochaines actions</h3>

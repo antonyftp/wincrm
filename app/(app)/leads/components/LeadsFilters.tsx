@@ -86,6 +86,8 @@ export default function LeadsFilters({ commercials }: Props) {
     !!q || !!commercial || !!etat || !!etape || !!typeLogement || !!natureRecherche ||
     sortBy !== "dateSaisie" || sortDir !== "desc";
 
+  const [filtersOpen, setFiltersOpen] = useState(false);
+
   return (
     <>
       <input
@@ -97,80 +99,90 @@ export default function LeadsFilters({ commercials }: Props) {
         style={{ flex: 2, minWidth: 200 }}
       />
 
-      <select
-        value={commercial}
-        onChange={(e) => pushParams({ commercial: e.target.value })}
-        className="input"
-        style={{ flex: 1, minWidth: 140 }}
+      <button
+        type="button"
+        onClick={() => setFiltersOpen(v => !v)}
+        className="btn btn-sm filters-toggle"
       >
-        <option value="">Tous les commerciaux</option>
-        {commercials.map((c) => (
-          <option key={c.id} value={c.id}>
-            {c.prenom} {c.nom}
-          </option>
-        ))}
-      </select>
+        Filtres{hasActiveFilters && !q ? ` (actifs)` : ''}
+      </button>
 
-      <select
-        value={etat}
-        onChange={(e) => pushParams({ etat: e.target.value })}
-        className="input"
-        style={{ flex: 1, minWidth: 140 }}
-      >
-        <option value="">Tous les états</option>
-        {(Object.entries(ETAT_LABELS) as [LeadEtat, string][]).map(([value, label]) => (
-          <option key={value} value={value}>{label}</option>
-        ))}
-      </select>
+      <div className={`filters-adv${filtersOpen ? ' open' : ''}`}>
+        <select
+          value={commercial}
+          onChange={(e) => pushParams({ commercial: e.target.value })}
+          className="input"
+          style={{ flex: 1, minWidth: 140 }}
+        >
+          <option value="">Tous les commerciaux</option>
+          {commercials.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.prenom} {c.nom}
+            </option>
+          ))}
+        </select>
 
-      <select
-        value={etape}
-        onChange={(e) => pushParams({ etape: e.target.value })}
-        className="input"
-        style={{ flex: 1, minWidth: 160 }}
-      >
-        <option value="">Toutes les étapes</option>
-        {(Object.entries(ETAPE_LABELS) as [LeadEtape, string][]).map(([value, label]) => (
-          <option key={value} value={value}>{label}</option>
-        ))}
-      </select>
+        <select
+          value={etat}
+          onChange={(e) => pushParams({ etat: e.target.value })}
+          className="input"
+          style={{ flex: 1, minWidth: 140 }}
+        >
+          <option value="">Tous les états</option>
+          {(Object.entries(ETAT_LABELS) as [LeadEtat, string][]).map(([value, label]) => (
+            <option key={value} value={value}>{label}</option>
+          ))}
+        </select>
 
-      <select
-        value={typeLogement}
-        onChange={(e) => pushParams({ typeLogement: e.target.value })}
-        className="input"
-        style={{ flex: 1, minWidth: 140 }}
-      >
-        <option value="">Tous types</option>
-        {(Object.entries(TYPE_LABELS) as [TypeLogement, string][]).map(([value, label]) => (
-          <option key={value} value={value}>{label}</option>
-        ))}
-      </select>
+        <select
+          value={etape}
+          onChange={(e) => pushParams({ etape: e.target.value })}
+          className="input"
+          style={{ flex: 1, minWidth: 160 }}
+        >
+          <option value="">Toutes les étapes</option>
+          {(Object.entries(ETAPE_LABELS) as [LeadEtape, string][]).map(([value, label]) => (
+            <option key={value} value={value}>{label}</option>
+          ))}
+        </select>
 
-      <select
-        value={natureRecherche}
-        onChange={(e) => pushParams({ natureRecherche: e.target.value })}
-        className="input"
-        style={{ flex: 1, minWidth: 120 }}
-      >
-        <option value="">Toutes natures</option>
-        <option value="achat">Achat</option>
-        <option value="location">Location</option>
-        <option value="investissement">Investissement</option>
-      </select>
+        <select
+          value={typeLogement}
+          onChange={(e) => pushParams({ typeLogement: e.target.value })}
+          className="input"
+          style={{ flex: 1, minWidth: 140 }}
+        >
+          <option value="">Tous types</option>
+          {(Object.entries(TYPE_LABELS) as [TypeLogement, string][]).map(([value, label]) => (
+            <option key={value} value={value}>{label}</option>
+          ))}
+        </select>
 
-      <select
-        value={currentSortKey}
-        onChange={(e) => handleSortChange(e.target.value)}
-        className="input"
-        style={{ flex: 1, minWidth: 160 }}
-      >
-        {SORT_OPTIONS.map((o) => (
-          <option key={sortKey(o.sortBy, o.sortDir)} value={sortKey(o.sortBy, o.sortDir)}>
-            {o.label}
-          </option>
-        ))}
-      </select>
+        <select
+          value={natureRecherche}
+          onChange={(e) => pushParams({ natureRecherche: e.target.value })}
+          className="input"
+          style={{ flex: 1, minWidth: 120 }}
+        >
+          <option value="">Toutes natures</option>
+          <option value="achat">Achat</option>
+          <option value="location">Location</option>
+          <option value="investissement">Investissement</option>
+        </select>
+
+        <select
+          value={currentSortKey}
+          onChange={(e) => handleSortChange(e.target.value)}
+          className="input"
+          style={{ flex: 1, minWidth: 160 }}
+        >
+          {SORT_OPTIONS.map((o) => (
+            <option key={sortKey(o.sortBy, o.sortDir)} value={sortKey(o.sortBy, o.sortDir)}>
+              {o.label}
+            </option>
+          ))}
+        </select>
+      </div>
 
       {hasActiveFilters && (
         <button

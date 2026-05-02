@@ -103,8 +103,8 @@ export default async function LeadsPage({ searchParams }: { searchParams: Search
           </div>
         ) : (
           <div className="card">
-            <div style={{ overflowX: "auto" }}>
-              <table className="table">
+            <div className="table-responsive">
+              <table className="table leads-table">
                 <thead>
                   <tr>
                     <th>Contact</th>

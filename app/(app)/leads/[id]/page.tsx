@@ -91,7 +91,7 @@ export default async function LeadDetailPage({
           <div style={{ padding: "20px 24px", display: "flex", gap: 20, alignItems: "center" }}>
             <span className="avatar avatar-lg" style={{ background: "var(--accent)" }}>{initials}</span>
             <div style={{ flex: 1 }}>
-              <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 6 }}>
+              <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 6, flexWrap: "wrap" }}>
                 <h2 style={{ margin: 0, fontSize: 22, fontWeight: 700, letterSpacing: "-0.02em" }}>
                   {lead.genre === "M" ? "M." : lead.genre === "Mme" ? "Mme" : ""} {lead.prenom} {lead.nom}
                 </h2>
@@ -108,7 +108,7 @@ export default async function LeadDetailPage({
         </div>
 
         {/* Corps */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: 16 }}>
+        <div className="lead-detail-grid">
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
 
             {/* Identité */}

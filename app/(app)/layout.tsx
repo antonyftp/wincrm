@@ -2,6 +2,7 @@ import { getSession } from "@/app/lib/session";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import Sidebar from "./components/Sidebar";
+import BottomNav from "./components/BottomNav";
 
 export default async function AppLayout({
   children,
@@ -35,6 +36,7 @@ export default async function AppLayout({
       <main className="main">
         {children}
       </main>
+      <BottomNav isAdmin={isAdmin} />
     </div>
   );
 }

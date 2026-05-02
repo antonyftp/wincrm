@@ -51,8 +51,6 @@ function FieldLabel({ htmlFor, text, required = false }: { htmlFor: string; text
   );
 }
 
-const grid3 = { display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 } as const;
-const grid2 = { display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 } as const;
 
 export default function LeadForm({ mode, lead, commercials, action }: Props) {
   const [state, formAction] = useActionState(action, null);
@@ -69,7 +67,7 @@ export default function LeadForm({ mode, lead, commercials, action }: Props) {
       <div className="card">
         <div className="card-h"><h3>Suivi</h3></div>
         <div className="card-b">
-          <div style={grid3}>
+          <div className="form-grid-3">
             <div className="field">
               <FieldLabel htmlFor="etat" text="État" />
               <select id="etat" name="etat" defaultValue={lead?.etat ?? "nouveau"} className="input">
@@ -103,7 +101,7 @@ export default function LeadForm({ mode, lead, commercials, action }: Props) {
       <div className="card">
         <div className="card-h"><h3>Identité</h3></div>
         <div className="card-b">
-          <div style={grid3}>
+          <div className="form-grid-3">
             <div className="field">
               <FieldLabel htmlFor="genre" text="Genre" required />
               <select id="genre" name="genre" defaultValue={lead?.genre ?? ""} required className="input">
@@ -149,7 +147,7 @@ export default function LeadForm({ mode, lead, commercials, action }: Props) {
       <div className="card">
         <div className="card-h"><h3>Contact</h3></div>
         <div className="card-b">
-          <div style={grid3}>
+          <div className="form-grid-3">
             <div className="field">
               <FieldLabel htmlFor="email" text="Email" />
               <input id="email" type="email" name="email" defaultValue={lead?.email ?? ""} className="input" />
@@ -170,7 +168,7 @@ export default function LeadForm({ mode, lead, commercials, action }: Props) {
       <div className="card">
         <div className="card-h"><h3>Projet immobilier</h3></div>
         <div className="card-b">
-          <div style={{ ...grid3, marginBottom: 16 }}>
+          <div className="form-grid-3" style={{ marginBottom: 16 }}>
             <div className="field">
               <FieldLabel htmlFor="natureRecherche" text="Nature de la recherche" required />
               <select id="natureRecherche" name="natureRecherche" defaultValue={lead?.natureRecherche ?? ""} required className="input">
