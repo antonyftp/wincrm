@@ -16,6 +16,7 @@ const NAV_ITEMS = [
   { href: "/dashboard", icon: "home", label: "Tableau de bord" },
   { href: "/leads", icon: "users", label: "Leads" },
   { href: "/pipeline", icon: "columns", label: "Pipeline" },
+  { href: "/calendrier", icon: "cal", label: "Calendrier" },
 ];
 
 const ADMIN_ITEMS = [
@@ -28,6 +29,7 @@ export default function Sidebar({ userName, userEmail, userInitials, isAdmin }: 
   function isActive(href: string) {
     if (href === "/dashboard") return pathname === "/dashboard";
     if (href === "/leads") return pathname.startsWith("/leads");
+    if (href === "/calendrier") return pathname.startsWith("/calendrier");
     return pathname.startsWith(href);
   }
 

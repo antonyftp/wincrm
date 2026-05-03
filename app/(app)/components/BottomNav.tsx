@@ -14,6 +14,7 @@ export default function BottomNav({ isAdmin }: Props) {
     if (href === "/dashboard") return pathname === "/dashboard";
     if (href === "/pipeline") return pathname.startsWith("/pipeline");
     if (href === "/leads") return pathname.startsWith("/leads") && !pathname.startsWith("/pipeline");
+    if (href === "/calendrier") return pathname.startsWith("/calendrier");
     if (href === "/admin") return pathname.startsWith("/admin");
     return false;
   }
@@ -55,6 +56,24 @@ export default function BottomNav({ isAdmin }: Props) {
           <path d="M22 21a7 7 0 0 0-5-6.7" />
         </svg>
         <span>Leads</span>
+      </Link>
+
+      <Link href="/calendrier" className={`mobile-nav-item${isActive("/calendrier") ? " active" : ""}`}>
+        <svg
+          width={22}
+          height={22}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={1.6}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden
+        >
+          <rect x="3" y="4" width="18" height="18" rx="2" />
+          <path d="M16 2v4M8 2v4M3 10h18" />
+        </svg>
+        <span>Calendrier</span>
       </Link>
 
       <Link href="/pipeline" className={`mobile-nav-item${isActive("/pipeline") ? " active" : ""}`}>
