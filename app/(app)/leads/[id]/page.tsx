@@ -164,14 +164,16 @@ export default async function LeadDetailPage({
                     <span className="val">{TYPE_LABELS[lead.typeLogement]}</span>
                   </div>
                 )}
-                {(lead.budgetMin !== null || lead.budgetMax !== null) && (
+                {lead.budgetAchat !== null && (
                   <div className="info-row">
-                    <span className="lbl">Budget</span>
-                    <span className="val tnum">
-                      {lead.budgetMin !== null ? lead.budgetMin.toLocaleString("fr-FR") + " €" : "—"}
-                      {" → "}
-                      {lead.budgetMax !== null ? lead.budgetMax.toLocaleString("fr-FR") + " €" : "—"}
-                    </span>
+                    <span className="lbl">Budget achat</span>
+                    <span className="val tnum">{lead.budgetAchat.toLocaleString("fr-FR")} €</span>
+                  </div>
+                )}
+                {lead.budgetLocation !== null && (
+                  <div className="info-row">
+                    <span className="lbl">Budget location</span>
+                    <span className="val tnum">{lead.budgetLocation.toLocaleString("fr-FR")} €</span>
                   </div>
                 )}
                 {lead.criteresSpecifiques && (
@@ -219,6 +221,14 @@ export default async function LeadDetailPage({
                   <div className="info-row">
                     <span className="lbl">Adresse</span>
                     <span className="val">{lead.adresse}</span>
+                  </div>
+                )}
+                {lead.dateMailEntrant && (
+                  <div className="info-row">
+                    <span className="lbl">Mail entrant</span>
+                    <span className="val">
+                      {new Date(lead.dateMailEntrant).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}
+                    </span>
                   </div>
                 )}
               </div>

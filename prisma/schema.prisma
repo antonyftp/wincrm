@@ -58,7 +58,7 @@ enum SituationMaritale {
 enum NatureRecherche {
   achat
   location
-  investissement
+  achat_ou_location
 }
 
 enum TypeLogement {
@@ -111,10 +111,12 @@ model Lead {
   situationMaritale SituationMaritale?
   heritier         Boolean?
 
+  dateMailEntrant    DateTime?
+
   natureRecherche    NatureRecherche
   typeLogement       TypeLogement
-  budgetMin          Float?
-  budgetMax          Float?
+  budgetAchat        Float?
+  budgetLocation     Float?
   criteresSpecifiques String?
 
   comments Comment[]

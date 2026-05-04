@@ -26,7 +26,7 @@ const LEAD_ETAPES = new Set<string>([
   "visite_programmee", "visite_effectuee", "relance_apres_visite",
   "offre_negociation", "conclu", "perdu",
 ]);
-const NATURES_RECHERCHE = new Set<string>(["achat", "location", "investissement"]);
+const NATURES_RECHERCHE = new Set<string>(["achat", "location", "achat_ou_location"]);
 const TYPES_LOGEMENT = new Set<string>(["appartement", "maison", "studio", "t2", "t3", "t4", "autre"]);
 
 const EXPORT_ROW_LIMIT = 10_000;
@@ -114,8 +114,8 @@ export async function GET(request: NextRequest) {
       { header: "Héritier", key: "heritier", width: 10 },
       { header: "Nature recherche", key: "natureRecherche", width: 20 },
       { header: "Type logement", key: "typeLogement", width: 16 },
-      { header: "Budget min (€)", key: "budgetMin", width: 16 },
-      { header: "Budget max (€)", key: "budgetMax", width: 16 },
+      { header: "Budget achat (€)", key: "budgetAchat", width: 16 },
+      { header: "Budget location (€)", key: "budgetLocation", width: 16 },
       { header: "Critères spécifiques", key: "criteresSpecifiques", width: 35 },
       { header: "État", key: "etat", width: 22 },
       { header: "Étape", key: "etape", width: 26 },
@@ -152,8 +152,8 @@ export async function GET(request: NextRequest) {
         heritier: lead.heritier === true ? "Oui" : lead.heritier === false ? "Non" : "",
         natureRecherche: NATURE_LABELS[lead.natureRecherche],
         typeLogement: TYPE_LABELS[lead.typeLogement],
-        budgetMin: lead.budgetMin ?? "",
-        budgetMax: lead.budgetMax ?? "",
+        budgetAchat: lead.budgetAchat ?? "",
+        budgetLocation: lead.budgetLocation ?? "",
         criteresSpecifiques: lead.criteresSpecifiques ?? "",
         etat: ETAT_LABELS[lead.etat],
         etape: ETAPE_LABELS[lead.etape],

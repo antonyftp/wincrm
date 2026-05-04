@@ -270,12 +270,12 @@ function buildPdfDocument(lead: NonNullable<LeadWithRelations>) {
             value: TYPE_LABELS[lead.typeLogement],
           }),
           React.createElement(Field, {
-            label: "Budget min",
-            value: lead.budgetMin !== null ? `${formatMontant(lead.budgetMin)} €` : null,
+            label: "Budget achat",
+            value: lead.budgetAchat !== null ? `${formatMontant(lead.budgetAchat)} €` : null,
           }),
           React.createElement(Field, {
-            label: "Budget max",
-            value: lead.budgetMax !== null ? `${formatMontant(lead.budgetMax)} €` : null,
+            label: "Budget location",
+            value: lead.budgetLocation !== null ? `${formatMontant(lead.budgetLocation)} €` : null,
           }),
           React.createElement(FieldFull, {
             label: "Critères spécifiques",

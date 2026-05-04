@@ -34,7 +34,7 @@ export const ETAPE_LABELS: Record<LeadEtape, string> = {
 export const NATURE_LABELS: Record<NatureRecherche, string> = {
   achat: "Achat",
   location: "Location",
-  investissement: "Investissement",
+  achat_ou_location: "Achat ou location",
 };
 
 export const TYPE_LABELS: Record<TypeLogement, string> = {

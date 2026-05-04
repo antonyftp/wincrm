@@ -167,7 +167,7 @@ export default function LeadsFilters({ commercials }: Props) {
           <option value="">Toutes natures</option>
           <option value="achat">Achat</option>
           <option value="location">Location</option>
-          <option value="investissement">Investissement</option>
+          <option value="achat_ou_location">Achat ou location</option>
         </select>
 
         <select

@@ -36,7 +36,7 @@ const LEAD_ETAPES = new Set<string>([
   "visite_programmee", "visite_effectuee", "relance_apres_visite",
   "offre_negociation", "conclu", "perdu",
 ]);
-const NATURES_RECHERCHE = new Set<string>(["achat", "location", "investissement"]);
+const NATURES_RECHERCHE = new Set<string>(["achat", "location", "achat_ou_location"]);
 const TYPES_LOGEMENT = new Set<string>(["appartement", "maison", "studio", "t2", "t3", "t4", "autre"]);
 const SITUATIONS_MARITALES = new Set<string>(["marie", "veuf", "celibataire", "divorce"]);
 
@@ -187,17 +187,19 @@ export async function createLead(
 
   const ageResult = parseOptionalInt(formData.get("age"), "Âge");
   if ("error" in ageResult) return { error: ageResult.error };
-  const budgetMinResult = parseOptionalFloat(formData.get("budgetMin"), "Budget min");
-  if ("error" in budgetMinResult) return { error: budgetMinResult.error };
-  const budgetMaxResult = parseOptionalFloat(formData.get("budgetMax"), "Budget max");
-  if ("error" in budgetMaxResult) return { error: budgetMaxResult.error };
+  const budgetAchatResult = parseOptionalFloat(formData.get("budgetAchat"), "Budget achat");
+  if ("error" in budgetAchatResult) return { error: budgetAchatResult.error };
+  const budgetLocationResult = parseOptionalFloat(formData.get("budgetLocation"), "Budget location");
+  if ("error" in budgetLocationResult) return { error: budgetLocationResult.error };
 
   const age = ageResult.value;
-  const budgetMin = budgetMinResult.value;
-  const budgetMax = budgetMaxResult.value;
+  const budgetAchat = budgetAchatResult.value;
+  const budgetLocation = budgetLocationResult.value;
 
-  if (budgetMin !== undefined && budgetMax !== undefined && budgetMin > budgetMax)
-    return { error: "Le budget min ne peut pas être supérieur au budget max." };
+  const dateMailEntrantRaw = (formData.get("dateMailEntrant") as string | null)?.trim();
+  const dateMailEntrant = dateMailEntrantRaw ? new Date(dateMailEntrantRaw) : undefined;
+  if (dateMailEntrant && isNaN(dateMailEntrant.getTime()))
+    return { error: "Date mail entrant invalide." };
 
   const heritierRaw = formData.get("heritier");
   const heritier =
@@ -215,8 +217,9 @@ export async function createLead(
         natureRecherche,
         typeLogement,
         ...(age !== undefined && { age }),
-        ...(budgetMin !== undefined && { budgetMin }),
-        ...(budgetMax !== undefined && { budgetMax }),
+        ...(budgetAchat !== undefined && { budgetAchat }),
+        ...(budgetLocation !== undefined && { budgetLocation }),
+        ...(dateMailEntrant !== undefined && { dateMailEntrant }),
         ...(heritier !== undefined && { heritier }),
         ...(titulaireId && { titulaireId }),
         ...(etatRaw && { etat: etatRaw as LeadEtat }),
@@ -286,17 +289,19 @@ export async function updateLead(
 
   const ageResult = parseOptionalInt(formData.get("age"), "Âge");
   if ("error" in ageResult) return { error: ageResult.error };
-  const budgetMinResult = parseOptionalFloat(formData.get("budgetMin"), "Budget min");
-  if ("error" in budgetMinResult) return { error: budgetMinResult.error };
-  const budgetMaxResult = parseOptionalFloat(formData.get("budgetMax"), "Budget max");
-  if ("error" in budgetMaxResult) return { error: budgetMaxResult.error };
+  const budgetAchatResult = parseOptionalFloat(formData.get("budgetAchat"), "Budget achat");
+  if ("error" in budgetAchatResult) return { error: budgetAchatResult.error };
+  const budgetLocationResult = parseOptionalFloat(formData.get("budgetLocation"), "Budget location");
+  if ("error" in budgetLocationResult) return { error: budgetLocationResult.error };
 
   const age = ageResult.value ?? null;
-  const budgetMin = budgetMinResult.value ?? null;
-  const budgetMax = budgetMaxResult.value ?? null;
+  const budgetAchat = budgetAchatResult.value ?? null;
+  const budgetLocation = budgetLocationResult.value ?? null;
 
-  if (budgetMin !== null && budgetMax !== null && budgetMin > budgetMax)
-    return { error: "Le budget min ne peut pas être supérieur au budget max." };
+  const dateMailEntrantRaw = (formData.get("dateMailEntrant") as string | null)?.trim();
+  const dateMailEntrant = dateMailEntrantRaw ? new Date(dateMailEntrantRaw) : null;
+  if (dateMailEntrant && isNaN(dateMailEntrant.getTime()))
+    return { error: "Date mail entrant invalide." };
 
   const heritierRaw = formData.get("heritier");
   const heritier =
@@ -315,8 +320,9 @@ export async function updateLead(
         natureRecherche,
         typeLogement,
         age,
-        budgetMin,
-        budgetMax,
+        budgetAchat,
+        budgetLocation,
+        dateMailEntrant,
         heritier,
         titulaireId,
         ...(etatRaw && { etat: etatRaw as LeadEtat }),

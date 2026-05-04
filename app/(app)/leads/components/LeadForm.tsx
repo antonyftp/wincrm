@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import { LeadEtat, LeadEtape, Genre, SituationMaritale, NatureRecherche, TypeLogement } from "@prisma/client";
@@ -20,10 +21,11 @@ type LeadWithTitulaire = {
   adresse: string | null;
   situationMaritale: SituationMaritale | null;
   heritier: boolean | null;
+  dateMailEntrant: Date | null;
   natureRecherche: NatureRecherche;
   typeLogement: TypeLogement;
-  budgetMin: number | null;
-  budgetMax: number | null;
+  budgetAchat: number | null;
+  budgetLocation: number | null;
   criteresSpecifiques: string | null;
 };
 
@@ -54,6 +56,7 @@ function FieldLabel({ htmlFor, text, required = false }: { htmlFor: string; text
 
 export default function LeadForm({ mode, lead, commercials, action }: Props) {
   const [state, formAction] = useActionState(action, null);
+  const [natureRecherche, setNatureRecherche] = useState<string>(lead?.natureRecherche ?? "");
 
   return (
     <form action={formAction} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -160,6 +163,16 @@ export default function LeadForm({ mode, lead, commercials, action }: Props) {
               <FieldLabel htmlFor="adresse" text="Adresse" />
               <input id="adresse" type="text" name="adresse" defaultValue={lead?.adresse ?? ""} className="input" />
             </div>
+            <div className="field">
+              <FieldLabel htmlFor="dateMailEntrant" text="Date mail entrant" />
+              <input
+                id="dateMailEntrant"
+                type="date"
+                name="dateMailEntrant"
+                defaultValue={lead?.dateMailEntrant ? new Date(lead.dateMailEntrant).toISOString().slice(0, 10) : ""}
+                className="input"
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -171,11 +184,18 @@ export default function LeadForm({ mode, lead, commercials, action }: Props) {
           <div className="form-grid-3" style={{ marginBottom: 16 }}>
             <div className="field">
               <FieldLabel htmlFor="natureRecherche" text="Nature de la recherche" required />
-              <select id="natureRecherche" name="natureRecherche" defaultValue={lead?.natureRecherche ?? ""} required className="input">
+              <select
+                id="natureRecherche"
+                name="natureRecherche"
+                value={natureRecherche}
+                onChange={(e) => setNatureRecherche(e.target.value)}
+                required
+                className="input"
+              >
                 <option value="" disabled>Sélectionner</option>
                 <option value="achat">Achat</option>
                 <option value="location">Location</option>
-                <option value="investissement">Investissement</option>
+                <option value="achat_ou_location">Achat ou location</option>
               </select>
             </div>
             <div className="field">
@@ -192,14 +212,18 @@ export default function LeadForm({ mode, lead, commercials, action }: Props) {
               </select>
             </div>
             <div />
-            <div className="field">
-              <FieldLabel htmlFor="budgetMin" text="Budget min (€)" />
-              <input id="budgetMin" type="number" name="budgetMin" defaultValue={lead?.budgetMin ?? ""} min={0} step={1000} className="input" />
-            </div>
-            <div className="field">
-              <FieldLabel htmlFor="budgetMax" text="Budget max (€)" />
-              <input id="budgetMax" type="number" name="budgetMax" defaultValue={lead?.budgetMax ?? ""} min={0} step={1000} className="input" />
-            </div>
+            {(natureRecherche === "achat" || natureRecherche === "achat_ou_location") && (
+              <div className="field">
+                <FieldLabel htmlFor="budgetAchat" text="Budget achat (€)" />
+                <input id="budgetAchat" type="number" name="budgetAchat" defaultValue={lead?.budgetAchat ?? ""} min={0} step={1000} className="input" />
+              </div>
+            )}
+            {(natureRecherche === "location" || natureRecherche === "achat_ou_location") && (
+              <div className="field">
+                <FieldLabel htmlFor="budgetLocation" text="Budget location (€)" />
+                <input id="budgetLocation" type="number" name="budgetLocation" defaultValue={lead?.budgetLocation ?? ""} min={0} step={1000} className="input" />
+              </div>
+            )}
           </div>
           <div className="field">
             <FieldLabel htmlFor="criteresSpecifiques" text="Critères spécifiques" />
