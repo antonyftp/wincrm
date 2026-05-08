@@ -201,8 +201,8 @@ export default async function LeadDetailPage({
                 {lead.email && (
                   <div className="info-row">
                     <span className="lbl">Email</span>
-                    <span className="val">
-                      <a href={`mailto:${lead.email}`} style={{ color: "var(--accent)", textDecoration: "none" }}>{lead.email}</a>
+                    <span className="val" style={{ minWidth: 0, overflow: "hidden" }}>
+                      <a href={`mailto:${lead.email}`} style={{ color: "var(--accent)", textDecoration: "none", overflowWrap: "break-word", wordBreak: "break-all", display: "block" }}>{lead.email}</a>
                     </span>
                   </div>
                 )}
