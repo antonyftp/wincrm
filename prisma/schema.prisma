@@ -18,27 +18,19 @@ enum UserStatut {
   refuse
 }
 
-enum LeadEtat {
-  nouveau
-  reponse_envoyee
-  contacte_telephone
-  non_valide
-  qualifie
-  visite_effectuee
-  offre_en_cours
-  offre_acceptee
-}
-
 enum LeadEtape {
-  nouveau_contact
-  en_attente_qualification
+  nouveau
+  attente_qualification
+  reponse_mail_envoye
+  contacte_telephone
+  non_qualifie
   qualifie
-  biens_proposes
+  bien_propose
   visite_programmee
   visite_effectuee
-  relance_apres_visite
-  offre_negociation
-  conclu
+  relance_suivi
+  negociation_offre
+  vendu_loue
   perdu
 }
 
@@ -94,11 +86,10 @@ model User {
 }
 
 model Lead {
-  id          String   @id @default(cuid())
-  dateSaisie  DateTime @default(now())
-  etat        LeadEtat @default(nouveau)
-  etape       LeadEtape @default(nouveau_contact)
-  titulaire   User?    @relation(fields: [titulaireId], references: [id], onDelete: SetNull)
+  id          String    @id @default(cuid())
+  dateSaisie  DateTime  @default(now())
+  etape       LeadEtape @default(nouveau)
+  titulaire   User?     @relation(fields: [titulaireId], references: [id], onDelete: SetNull)
   titulaireId String?
 
   genre            Genre
@@ -128,7 +119,6 @@ model Lead {
 
   @@index([titulaireId])
   @@index([dateSaisie])
-  @@index([etat])
   @@index([etape])
   @@index([updatedAt])
 }

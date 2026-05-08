@@ -3,13 +3,12 @@
 import { useState } from "react";
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
-import { LeadEtat, LeadEtape, Genre, SituationMaritale, NatureRecherche, TypeLogement } from "@prisma/client";
+import { LeadEtape, Genre, SituationMaritale, NatureRecherche, TypeLogement } from "@prisma/client";
 import type { FormState } from "@/app/actions/leads";
-import { ETAT_LABELS, ETAPE_LABELS } from "@/app/lib/labels";
+import { ETAPE_LABELS } from "@/app/lib/labels";
 
 type LeadWithTitulaire = {
   id: string;
-  etat: LeadEtat;
   etape: LeadEtape;
   titulaireId: string | null;
   genre: Genre;
@@ -72,16 +71,8 @@ export default function LeadForm({ mode, lead, commercials, action }: Props) {
         <div className="card-b">
           <div className="form-grid-3">
             <div className="field">
-              <FieldLabel htmlFor="etat" text="État" />
-              <select id="etat" name="etat" defaultValue={lead?.etat ?? "nouveau"} className="input">
-                {(Object.keys(ETAT_LABELS) as LeadEtat[]).map((val) => (
-                  <option key={val} value={val}>{ETAT_LABELS[val]}</option>
-                ))}
-              </select>
-            </div>
-            <div className="field">
               <FieldLabel htmlFor="etape" text="Étape" />
-              <select id="etape" name="etape" defaultValue={lead?.etape ?? "nouveau_contact"} className="input">
+              <select id="etape" name="etape" defaultValue={lead?.etape ?? "nouveau"} className="input">
                 {(Object.keys(ETAPE_LABELS) as LeadEtape[]).map((val) => (
                   <option key={val} value={val}>{ETAPE_LABELS[val]}</option>
                 ))}

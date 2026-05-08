@@ -3,28 +3,22 @@ import ExcelJS from "exceljs";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/app/lib/session";
 import {
-  ETAT_LABELS,
   ETAPE_LABELS,
   NATURE_LABELS,
   TYPE_LABELS,
   SITUATION_LABELS,
 } from "@/app/lib/labels";
 import {
-  LeadEtat,
   LeadEtape,
   NatureRecherche,
   TypeLogement,
   type Prisma,
 } from "@prisma/client";
 
-const LEAD_ETATS = new Set<string>([
-  "nouveau", "reponse_envoyee", "contacte_telephone", "non_valide",
-  "qualifie", "visite_effectuee", "offre_en_cours", "offre_acceptee",
-]);
 const LEAD_ETAPES = new Set<string>([
-  "nouveau_contact", "en_attente_qualification", "qualifie", "biens_proposes",
-  "visite_programmee", "visite_effectuee", "relance_apres_visite",
-  "offre_negociation", "conclu", "perdu",
+  "nouveau", "attente_qualification", "reponse_mail_envoye", "contacte_telephone",
+  "non_qualifie", "qualifie", "bien_propose", "visite_programmee",
+  "visite_effectuee", "relance_suivi", "negociation_offre", "vendu_loue", "perdu",
 ]);
 const NATURES_RECHERCHE = new Set<string>(["achat", "location", "achat_ou_location"]);
 const TYPES_LOGEMENT = new Set<string>(["appartement", "maison", "studio", "t2", "t3", "t4", "autre"]);
@@ -44,7 +38,6 @@ export async function GET(request: NextRequest) {
     const { searchParams } = request.nextUrl;
     const q = searchParams.get("q") ?? undefined;
     const commercial = searchParams.get("commercial") ?? undefined;
-    const etat = searchParams.get("etat") ?? undefined;
     const etape = searchParams.get("etape") ?? undefined;
     const typeLogement = searchParams.get("typeLogement") ?? undefined;
     const natureRecherche = searchParams.get("natureRecherche") ?? undefined;
@@ -70,14 +63,12 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Non-admins may only filter by their own commercial ID
     if (commercial) {
       if (session.role === "admin" || commercial === session.userId) {
         conditions.push({ titulaireId: commercial });
       }
     }
 
-    if (etat && LEAD_ETATS.has(etat)) conditions.push({ etat: etat as LeadEtat });
     if (etape && LEAD_ETAPES.has(etape)) conditions.push({ etape: etape as LeadEtape });
     if (typeLogement && TYPES_LOGEMENT.has(typeLogement)) conditions.push({ typeLogement: typeLogement as TypeLogement });
     if (natureRecherche && NATURES_RECHERCHE.has(natureRecherche)) conditions.push({ natureRecherche: natureRecherche as NatureRecherche });
@@ -85,7 +76,6 @@ export async function GET(request: NextRequest) {
     const SORT_FIELDS: Record<string, object> = {
       dateSaisie: { dateSaisie: sortDir },
       nom: { nom: sortDir },
-      etat: { etat: sortDir },
       etape: { etape: sortDir },
       typeLogement: { typeLogement: sortDir },
       natureRecherche: { natureRecherche: sortDir },
@@ -117,7 +107,6 @@ export async function GET(request: NextRequest) {
       { header: "Budget achat (€)", key: "budgetAchat", width: 16 },
       { header: "Budget location (€)", key: "budgetLocation", width: 16 },
       { header: "Critères spécifiques", key: "criteresSpecifiques", width: 35 },
-      { header: "État", key: "etat", width: 22 },
       { header: "Étape", key: "etape", width: 26 },
       { header: "Commercial", key: "commercial", width: 24 },
       { header: "Date de saisie", key: "dateSaisie", width: 18 },
@@ -155,7 +144,6 @@ export async function GET(request: NextRequest) {
         budgetAchat: lead.budgetAchat ?? "",
         budgetLocation: lead.budgetLocation ?? "",
         criteresSpecifiques: lead.criteresSpecifiques ?? "",
-        etat: ETAT_LABELS[lead.etat],
         etape: ETAPE_LABELS[lead.etape],
         commercial: lead.titulaire
           ? `${lead.titulaire.prenom} ${lead.titulaire.nom}`

@@ -5,7 +5,6 @@ import { prisma } from "@/lib/prisma";
 import { getSession } from "@/app/lib/session";
 import {
   Genre,
-  LeadEtat,
   LeadEtape,
   NatureRecherche,
   SituationMaritale,
@@ -18,7 +17,6 @@ export type FormState = { error: string } | null;
 export type LeadsFilters = {
   q?: string;
   commercial?: string;
-  etat?: string;
   etape?: string;
   typeLogement?: string;
   natureRecherche?: string;
@@ -27,14 +25,10 @@ export type LeadsFilters = {
 };
 
 const GENRES = new Set<string>(["M", "Mme", "Autre"]);
-const LEAD_ETATS = new Set<string>([
-  "nouveau", "reponse_envoyee", "contacte_telephone", "non_valide",
-  "qualifie", "visite_effectuee", "offre_en_cours", "offre_acceptee",
-]);
 const LEAD_ETAPES = new Set<string>([
-  "nouveau_contact", "en_attente_qualification", "qualifie", "biens_proposes",
-  "visite_programmee", "visite_effectuee", "relance_apres_visite",
-  "offre_negociation", "conclu", "perdu",
+  "nouveau", "attente_qualification", "reponse_mail_envoye", "contacte_telephone",
+  "non_qualifie", "qualifie", "bien_propose", "visite_programmee",
+  "visite_effectuee", "relance_suivi", "negociation_offre", "vendu_loue", "perdu",
 ]);
 const NATURES_RECHERCHE = new Set<string>(["achat", "location", "achat_ou_location"]);
 const TYPES_LOGEMENT = new Set<string>(["appartement", "maison", "studio", "t2", "t3", "t4", "autre"]);
@@ -68,7 +62,7 @@ export async function getLeads(filters: LeadsFilters = {}) {
   const session = await getSession();
   if (!session) return { error: "Non authentifié." };
 
-  const { q, commercial, etat, etape, typeLogement, natureRecherche, sortBy, sortDir = "desc" } = filters;
+  const { q, commercial, etape, typeLogement, natureRecherche, sortBy, sortDir = "desc" } = filters;
 
   const conditions: Prisma.LeadWhereInput[] = [];
 
@@ -88,13 +82,11 @@ export async function getLeads(filters: LeadsFilters = {}) {
     });
   }
 
-  // Non-admins may only filter by their own commercial ID
   if (commercial) {
     if (session.role === "admin" || commercial === session.userId) {
       conditions.push({ titulaireId: commercial });
     }
   }
-  if (etat && LEAD_ETATS.has(etat)) conditions.push({ etat: etat as LeadEtat });
   if (etape && LEAD_ETAPES.has(etape)) conditions.push({ etape: etape as LeadEtape });
   if (typeLogement && TYPES_LOGEMENT.has(typeLogement)) conditions.push({ typeLogement: typeLogement as TypeLogement });
   if (natureRecherche && NATURES_RECHERCHE.has(natureRecherche)) conditions.push({ natureRecherche: natureRecherche as NatureRecherche });
@@ -103,7 +95,6 @@ export async function getLeads(filters: LeadsFilters = {}) {
   const SORT_FIELDS: Record<string, object> = {
     dateSaisie: { dateSaisie: dir },
     nom: { nom: dir },
-    etat: { etat: dir },
     etape: { etape: dir },
     typeLogement: { typeLogement: dir },
     natureRecherche: { natureRecherche: dir },
@@ -176,11 +167,9 @@ export async function createLead(
   const natureRecherche = natureRechercheRaw as NatureRecherche;
   const typeLogement = typeLogementRaw as TypeLogement;
 
-  const etatRaw = formData.get("etat") as string | null;
   const etapeRaw = formData.get("etape") as string | null;
   const situationMaritaleRaw = formData.get("situationMaritale") as string | null;
 
-  if (etatRaw && !LEAD_ETATS.has(etatRaw)) return { error: "État invalide." };
   if (etapeRaw && !LEAD_ETAPES.has(etapeRaw)) return { error: "Étape invalide." };
   if (situationMaritaleRaw && !SITUATIONS_MARITALES.has(situationMaritaleRaw))
     return { error: "Situation maritale invalide." };
@@ -222,7 +211,6 @@ export async function createLead(
         ...(dateMailEntrant !== undefined && { dateMailEntrant }),
         ...(heritier !== undefined && { heritier }),
         ...(titulaireId && { titulaireId }),
-        ...(etatRaw && { etat: etatRaw as LeadEtat }),
         ...(etapeRaw && { etape: etapeRaw as LeadEtape }),
         email: (formData.get("email") as string | null)?.trim() || undefined,
         telephone: (formData.get("telephone") as string | null)?.trim() || undefined,
@@ -278,11 +266,9 @@ export async function updateLead(
   const natureRecherche = natureRechercheRaw as NatureRecherche;
   const typeLogement = typeLogementRaw as TypeLogement;
 
-  const etatRaw = formData.get("etat") as string | null;
   const etapeRaw = formData.get("etape") as string | null;
   const situationMaritaleRaw = formData.get("situationMaritale") as string | null;
 
-  if (etatRaw && !LEAD_ETATS.has(etatRaw)) return { error: "État invalide." };
   if (etapeRaw && !LEAD_ETAPES.has(etapeRaw)) return { error: "Étape invalide." };
   if (situationMaritaleRaw && !SITUATIONS_MARITALES.has(situationMaritaleRaw))
     return { error: "Situation maritale invalide." };
@@ -325,7 +311,6 @@ export async function updateLead(
         dateMailEntrant,
         heritier,
         titulaireId,
-        ...(etatRaw && { etat: etatRaw as LeadEtat }),
         ...(etapeRaw && { etape: etapeRaw as LeadEtape }),
         email: (formData.get("email") as string | null)?.trim() || null,
         telephone: (formData.get("telephone") as string | null)?.trim() || null,

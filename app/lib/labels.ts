@@ -1,33 +1,24 @@
 import {
   ActionType,
   LeadEtape,
-  LeadEtat,
   NatureRecherche,
   SituationMaritale,
   TypeLogement,
 } from "@prisma/client";
 
-export const ETAT_LABELS: Record<LeadEtat, string> = {
-  nouveau: "Nouveau",
-  reponse_envoyee: "Réponse envoyée",
-  contacte_telephone: "Contacté téléphone",
-  non_valide: "Non valide",
-  qualifie: "Qualifié",
-  visite_effectuee: "Visite effectuée",
-  offre_en_cours: "Offre en cours",
-  offre_acceptee: "Offre acceptée",
-};
-
 export const ETAPE_LABELS: Record<LeadEtape, string> = {
-  nouveau_contact: "Nouveau contact",
-  en_attente_qualification: "En attente de qualification",
+  nouveau: "Nouveau",
+  attente_qualification: "Attente qualification",
+  reponse_mail_envoye: "Réponse mail envoyé",
+  contacte_telephone: "Contacté téléphone",
+  non_qualifie: "Non qualifié",
   qualifie: "Qualifié",
-  biens_proposes: "Biens proposés",
+  bien_propose: "Bien proposé",
   visite_programmee: "Visite programmée",
   visite_effectuee: "Visite effectuée",
-  relance_apres_visite: "Relance après visite",
-  offre_negociation: "Offre / Négociation",
-  conclu: "Conclu",
+  relance_suivi: "Relance suivi",
+  negociation_offre: "Negociation / offre",
+  vendu_loue: "Vendu / loué",
   perdu: "Perdu",
 };
 
@@ -64,19 +55,16 @@ export const SITUATION_LABELS: Record<SituationMaritale, string> = {
 
 // ─── Badge helpers ───────────────────────────────────────────────────────────
 
-export function etatBadgeClass(etat: LeadEtat): string {
-  const pos: LeadEtat[] = ["qualifie", "visite_effectuee", "offre_en_cours", "offre_acceptee"];
-  const neg: LeadEtat[] = ["non_valide"];
-  const warn: LeadEtat[] = ["reponse_envoyee", "contacte_telephone"];
-
-  if (pos.includes(etat)) return "badge pos";
-  if (neg.includes(etat)) return "badge neg";
-  if (warn.includes(etat)) return "badge warn";
-  return "badge";
-}
-
 export function etapeBadgeClass(etape: LeadEtape): string {
-  if (etape === "conclu") return "badge pos";
-  if (etape === "perdu") return "badge neg";
-  return "badge info";
+  if (etape === "vendu_loue") return "badge pos";
+  if (etape === "perdu" || etape === "non_qualifie") return "badge neg";
+  if (
+    etape === "qualifie" ||
+    etape === "bien_propose" ||
+    etape === "visite_programmee" ||
+    etape === "visite_effectuee" ||
+    etape === "negociation_offre"
+  )
+    return "badge info";
+  return "badge";
 }

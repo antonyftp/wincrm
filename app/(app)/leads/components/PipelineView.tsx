@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import type { Prisma } from "@prisma/client";
 import { LeadEtape } from "@prisma/client";
-import { ETAPE_LABELS, ETAT_LABELS, NATURE_LABELS, TYPE_LABELS, etatBadgeClass } from "@/app/lib/labels";
+import { ETAPE_LABELS, etapeBadgeClass, NATURE_LABELS, TYPE_LABELS } from "@/app/lib/labels";
 import { ETAPE_ORDER, ETAPE_COLORS } from "@/app/lib/etape-colors";
 import { updateLeadEtape } from "@/app/actions/leads";
 
@@ -111,9 +111,9 @@ export default function PipelineView({ leads: initialLeads }: { leads: LeadWithT
                       {TYPE_LABELS[lead.typeLogement]} · {NATURE_LABELS[lead.natureRecherche]}
                     </div>
                     <div className="kc-foot">
-                      <span className={etatBadgeClass(lead.etat)}>
+                      <span className={etapeBadgeClass(lead.etape)}>
                         <span className="dot" />
-                        {ETAT_LABELS[lead.etat]}
+                        {ETAPE_LABELS[lead.etape]}
                       </span>
                       <span className="kc-meta">
                         {lead.titulaire

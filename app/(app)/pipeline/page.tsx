@@ -16,7 +16,6 @@ export default async function PipelinePage({ searchParams }: { searchParams: Sea
 
   const q = str(sp.q);
   const commercial = str(sp.commercial);
-  const etat = str(sp.etat);
   const etape = str(sp.etape);
   const typeLogement = str(sp.typeLogement);
   const natureRecherche = str(sp.natureRecherche);
@@ -26,7 +25,6 @@ export default async function PipelinePage({ searchParams }: { searchParams: Sea
   const filters = {
     ...(q && { q }),
     ...(commercial && { commercial }),
-    ...(etat && { etat }),
     ...(etape && { etape }),
     ...(typeLogement && { typeLogement }),
     ...(natureRecherche && { natureRecherche }),

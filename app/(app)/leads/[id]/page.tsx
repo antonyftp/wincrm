@@ -3,12 +3,10 @@ import Link from "next/link";
 import { getLead } from "@/app/actions/leads";
 import { getSession } from "@/app/lib/session";
 import {
-  ETAT_LABELS,
   ETAPE_LABELS,
   NATURE_LABELS,
   SITUATION_LABELS,
   TYPE_LABELS,
-  etatBadgeClass,
   etapeBadgeClass,
 } from "@/app/lib/labels";
 import DeleteButton from "../components/DeleteButton";
@@ -95,8 +93,7 @@ export default async function LeadDetailPage({
                 <h2 style={{ margin: 0, fontSize: 22, fontWeight: 700, letterSpacing: "-0.02em" }}>
                   {lead.genre === "M" ? "M." : lead.genre === "Mme" ? "Mme" : ""} {lead.prenom} {lead.nom}
                 </h2>
-                <span className={etatBadgeClass(lead.etat)}><span className="dot" />{ETAT_LABELS[lead.etat]}</span>
-                <span className={etapeBadgeClass(lead.etape)}>{ETAPE_LABELS[lead.etape]}</span>
+                <span className={etapeBadgeClass(lead.etape)}><span className="dot" />{ETAPE_LABELS[lead.etape]}</span>
               </div>
               <div style={{ display: "flex", gap: 16, fontSize: 13, color: "var(--text-soft)" }}>
                 {lead.telephone && <span>📞 {lead.telephone}</span>}

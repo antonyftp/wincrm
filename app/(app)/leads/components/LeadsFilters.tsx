@@ -2,8 +2,8 @@
 
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { ETAT_LABELS, ETAPE_LABELS, TYPE_LABELS } from "@/app/lib/labels";
-import type { LeadEtat, LeadEtape, TypeLogement } from "@prisma/client";
+import { ETAPE_LABELS, TYPE_LABELS } from "@/app/lib/labels";
+import type { LeadEtape, TypeLogement } from "@prisma/client";
 
 type Props = {
   commercials: { id: string; nom: string; prenom: string }[];
@@ -14,7 +14,6 @@ const SORT_OPTIONS = [
   { label: "Date saisie (ancien)", sortBy: "dateSaisie", sortDir: "asc" },
   { label: "Nom A→Z", sortBy: "nom", sortDir: "asc" },
   { label: "Nom Z→A", sortBy: "nom", sortDir: "desc" },
-  { label: "État", sortBy: "etat", sortDir: "asc" },
   { label: "Étape", sortBy: "etape", sortDir: "asc" },
 ] as const;
 
@@ -31,13 +30,11 @@ export default function LeadsFilters({ commercials }: Props) {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const commercial = searchParams.get("commercial") ?? "";
-  const etat = searchParams.get("etat") ?? "";
   const etape = searchParams.get("etape") ?? "";
   const typeLogement = searchParams.get("typeLogement") ?? "";
   const natureRecherche = searchParams.get("natureRecherche") ?? "";
   const sortBy = searchParams.get("sortBy") ?? "dateSaisie";
   const sortDir = searchParams.get("sortDir") ?? "desc";
-  const view = searchParams.get("view") ?? "list";
 
   const currentSortKey = sortKey(sortBy, sortDir);
 
@@ -83,7 +80,7 @@ export default function LeadsFilters({ commercials }: Props) {
   }
 
   const hasActiveFilters =
-    !!q || !!commercial || !!etat || !!etape || !!typeLogement || !!natureRecherche ||
+    !!q || !!commercial || !!etape || !!typeLogement || !!natureRecherche ||
     sortBy !== "dateSaisie" || sortDir !== "desc";
 
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -119,18 +116,6 @@ export default function LeadsFilters({ commercials }: Props) {
             <option key={c.id} value={c.id}>
               {c.prenom} {c.nom}
             </option>
-          ))}
-        </select>
-
-        <select
-          value={etat}
-          onChange={(e) => pushParams({ etat: e.target.value })}
-          className="input"
-          style={{ flex: 1, minWidth: 140 }}
-        >
-          <option value="">Tous les états</option>
-          {(Object.entries(ETAT_LABELS) as [LeadEtat, string][]).map(([value, label]) => (
-            <option key={value} value={value}>{label}</option>
           ))}
         </select>
 

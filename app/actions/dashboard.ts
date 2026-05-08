@@ -120,10 +120,10 @@ export async function getDashboardData(): Promise<DashboardData> {
       orderBy: { etape: "asc" },
     }),
 
-    prisma.lead.count({ where: { etape: "conclu" } }),
+    prisma.lead.count({ where: { etape: "vendu_loue" } }),
 
     prisma.lead.count({
-      where: { etape: "conclu", dateSaisie: { gte: debutMois, lt: finMois } },
+      where: { etape: "vendu_loue", dateSaisie: { gte: debutMois, lt: finMois } },
     }),
 
     prisma.lead.count({

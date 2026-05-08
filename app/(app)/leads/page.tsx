@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { getLeads, getCommercials } from "@/app/actions/leads";
 import { getSession } from "@/app/lib/session";
-import { ETAT_LABELS, ETAPE_LABELS, etatBadgeClass } from "@/app/lib/labels";
+import { ETAPE_LABELS, etapeBadgeClass } from "@/app/lib/labels";
 import DeleteButton from "./components/DeleteButton";
 import LeadsFilters from "./components/LeadsFilters";
 import LeadsARelancer from "./components/LeadsARelancer";
@@ -20,7 +20,6 @@ export default async function LeadsPage({ searchParams }: { searchParams: Search
 
   const q = str(sp.q);
   const commercial = str(sp.commercial);
-  const etat = str(sp.etat);
   const etape = str(sp.etape);
   const typeLogement = str(sp.typeLogement);
   const natureRecherche = str(sp.natureRecherche);
@@ -30,7 +29,6 @@ export default async function LeadsPage({ searchParams }: { searchParams: Search
   const filters = {
     ...(q && { q }),
     ...(commercial && { commercial }),
-    ...(etat && { etat }),
     ...(etape && { etape }),
     ...(typeLogement && { typeLogement }),
     ...(natureRecherche && { natureRecherche }),
@@ -51,7 +49,6 @@ export default async function LeadsPage({ searchParams }: { searchParams: Search
   const exportParams = new URLSearchParams();
   if (q) exportParams.set("q", q);
   if (commercial) exportParams.set("commercial", commercial);
-  if (etat) exportParams.set("etat", etat);
   if (etape) exportParams.set("etape", etape);
   if (typeLogement) exportParams.set("typeLogement", typeLogement);
   if (natureRecherche) exportParams.set("natureRecherche", natureRecherche);
@@ -108,7 +105,6 @@ export default async function LeadsPage({ searchParams }: { searchParams: Search
                 <thead>
                   <tr>
                     <th>Contact</th>
-                    <th>État</th>
                     <th>Étape</th>
                     <th>Commercial</th>
                     <th>Date saisie</th>
@@ -135,11 +131,10 @@ export default async function LeadsPage({ searchParams }: { searchParams: Search
                           </div>
                         </td>
                         <td>
-                          <span className={etatBadgeClass(lead.etat)}>
-                            {ETAT_LABELS[lead.etat]}
+                          <span className={etapeBadgeClass(lead.etape)}>
+                            {ETAPE_LABELS[lead.etape]}
                           </span>
                         </td>
-                        <td className="muted">{ETAPE_LABELS[lead.etape]}</td>
                         <td className="muted">
                           {lead.titulaire
                             ? `${lead.titulaire.prenom} ${lead.titulaire.nom}`

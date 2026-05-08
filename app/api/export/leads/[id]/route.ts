@@ -11,7 +11,6 @@ import {
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/app/lib/session";
 import {
-  ETAT_LABELS,
   ETAPE_LABELS,
   NATURE_LABELS,
   TYPE_LABELS,
@@ -291,10 +290,6 @@ function buildPdfDocument(lead: NonNullable<LeadWithRelations>) {
         React.createElement(
           View,
           { style: styles.grid },
-          React.createElement(Field, {
-            label: "État",
-            value: ETAT_LABELS[lead.etat],
-          }),
           React.createElement(Field, {
             label: "Étape",
             value: ETAPE_LABELS[lead.etape],
