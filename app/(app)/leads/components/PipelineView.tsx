@@ -53,6 +53,7 @@ export default function PipelineView({ leads: initialLeads }: { leads: LeadWithT
   function handleDrop(e: React.DragEvent, targetEtape: LeadEtape) {
     e.preventDefault();
     setDragOverEtape(null);
+    setDraggingId(null);
     const leadId = e.dataTransfer.getData("leadId");
     const lead = leads.find((l) => l.id === leadId);
     if (!lead || lead.etape === targetEtape) return;
